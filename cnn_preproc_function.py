@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 
 def init_dir(directory):
     if not os.path.exists(directory):
@@ -8,11 +9,11 @@ def init_dir(directory):
 def cumulative_returns(returns):
     return np.prod(1+np.array(returns)) - 1
 
-def reshape2(x):
-    s = [j for j in x.shape]
-    x2 = x.reshape(s[0],s[1],s[2],1)
-
-    return x2, s
+# def reshape2(x):
+#     s = [j for j in x.shape]
+#     x2 = x.reshape(s[0],s[1],s[2],1)
+#
+#     return x2, s
 
 def filter_off_trading_day(df, target, threshold = 0.1):
     df["hh"] = df.index.hour
@@ -23,11 +24,11 @@ def filter_off_trading_day(df, target, threshold = 0.1):
     return df
 
 def create_target(df, target_col, FUTURE_PERIOD_PREDICT, FUNC = cumulative_returns, keras_preproc = True):
-    df['target'] = df[target_col].rolling(window = FUTURE_PERIOD_PREDICT).apply(lambda x: FUNC(x))
+    df.loc[:,'target'] = df[target_col].rolling(window = FUTURE_PERIOD_PREDICT).apply(lambda x: FUNC(x))
     if keras_preproc:
-        df['target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT+1)
+        df.loc[:,'target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT+1)
     else:
-        df['target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT)
+        df.loc[:,'target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT)
 
     df = df.dropna()
     return df

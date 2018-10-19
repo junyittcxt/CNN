@@ -3,3 +3,7 @@
 __pycache__/keras_metric.cpython-35.pyc
 __pycache__/cnn_preproc_function.cpython-35.pyc
 .ipynb_checkpoints/sequence_processing-checkpoint.ipynb
+
+__pycache__/
+
+output/
