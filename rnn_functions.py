@@ -26,8 +26,7 @@ def precision(y_true, y_pred):
     return precision
 
 
-def cumulative_returns(returns):
-    return np.prod(1+np.array(returns)) - 1
+
 
 def performance_binary(x, y, model, sample_type = "Sample", threshold = 0.5, silence = False):
     y_pred = model.predict(x)[:,1]
@@ -63,36 +62,13 @@ def performance_binary(x, y, model, sample_type = "Sample", threshold = 0.5, sil
 
     return performance_dict
 
-def filter_off_trading_day(df, target, threshold = 0.1):
-    df["hh"] = df.index.hour
-    df["mm"] = df.index.minute
-    df["ss"] = df.index.second
-    df["wkday"] = df.index.weekday
-    df = df.groupby(["hh", "mm", "ss", "wkday"]).filter(lambda x: np.mean(x[target]!=0) > threshold)
-    return df
-
-def create_target(df, target_col, FUTURE_PERIOD_PREDICT, FUNC = cumulative_returns):
-    df['target'] = df[target_col].rolling(window = FUTURE_PERIOD_PREDICT).apply(lambda x: FUNC(x))
-    df['target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT)
-    df = df.dropna()
-    return df
-
-def classify_returns(returns, threshold = 0, flip = False):
-    if flip:
-        if returns < threshold:
-            return 1
-        else:
-            return 0
-    else:
-        if returns > threshold:
-            return 1
-        else:
-            return 0
 
 
-def classify_target(df, target_col = "target", threshold = 0, flip = False):
-    df[target_col] = df[target_col].apply(lambda x: classify_returns(x, threshold, flip))
-    return df
+
+
+
+
+
 
 
 def sample_cc_main_df(RATIO_TO_PREDICT, FUTURE_PERIOD_PREDICT):
@@ -204,11 +180,7 @@ def preprocess_returns_df(df, target_col, SEQ_LEN, scaler = None, fit = True, sa
     num_features = len(x_columns)
     return np.array(X), np.array(y), scaler, x_columns, num_example, num_features
 
-def reshape2(x):
-    s = [j for j in x.shape]
-    x2 = x.reshape(s[0],s[1],s[2],1)
 
-    return x2, s
 
 def preprocess_returns_df_cnn(df, target_col, SEQ_LEN, scaler = None, fit = True, same_prop = True, shuffle = False):
     x_columns = [c for c in df.columns if c != target_col]
