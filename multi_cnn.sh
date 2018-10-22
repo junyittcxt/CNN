@@ -1,7 +1,8 @@
 # asset=2
 # lossmethod=1
 
-for asset in {3..15}
+#eurjpy 3 audusd 0
+for asset in {0..0}
 do
 for lossmethod in {0..1}
 do

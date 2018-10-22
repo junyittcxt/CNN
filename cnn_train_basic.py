@@ -82,7 +82,7 @@ else:
 checkpoint = tf.keras.callbacks.ModelCheckpoint("{}/{}.model".format(models_folder, filepath),
                                                    monitor=monitor_loss,
                                                    verbose=1,
-                                                   save_best_only=True,
+                                                   save_best_only=False,
                                                    save_weights_only=False,
                                                    mode=mode_loss)
 earlystopping = tf.keras.callbacks.EarlyStopping(monitor=monitor_loss, min_delta=0, patience=int(EPOCHS/3), verbose=0, mode=mode_loss)

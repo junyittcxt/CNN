@@ -21,7 +21,7 @@ import os
 
 optparser = optparse.OptionParser()
 optparser.add_option("-a", "--assetindex", default=0, help="assetindex")
-optparser.add_option("-d", "--gpudevice", default="0", help="gpudevice")
+optparser.add_option("-d", "--gpudevice", default="1", help="gpudevice")
 opts = optparser.parse_args()[0]
 
 assetindex = int(opts.assetindex)
@@ -33,12 +33,12 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = tf.Session(config=config)
 
-#50
-possible_asset = ['AUDUSD', 'EURUSD', 'EURGBP', 'EURJPY', 'EWH', 'EWZ', 'FXI', 'IAU', 'EZU', 'KRE',
- 'LQD', 'NZDUSD', 'EEM', 'EFA', 'GDX', 'HYG', 'SPY', 'XLU', 'IYR', 'GLD',
- 'EWT', 'IEF', 'AGG', 'UNG', 'USDJPY', 'GBPUSD', 'USDCAD', 'SLV', 'RSX', 'EWJ',
- 'OIH', 'SMH', 'XLB', 'TLT', 'USDCHF', 'USO', 'XLF', 'XLK', 'XLP', 'XOP',
- 'VEA', 'VWO', 'XLE', 'XLI', 'XLV', 'XRT', 'XLY', 'VNQ', 'EWW', 'XBI']
+#36
+possible_asset = ['EWZ', 'IWM', 'SPY', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLU', 'IYR',
+       'XLV', 'OIH', 'EZU', 'XLB', 'EWT', 'XLY', 'EWH', 'EWW', 'DIA', 'EWY',
+       'IBB', 'EWC', 'USDJPY', 'GBPUSD', 'USDCHF', 'USDCAD', 'EURGBP',
+       'XAGUSD', 'XAUUSD', 'EURUSD', 'EWJ', 'SMH', 'EWG', 'AUDUSD', 'EURJPY',
+       'NZDUSD']
 
 
 if assetindex > len(possible_asset):
@@ -48,35 +48,35 @@ print("=============================")
 print(possible_asset[assetindex])
 print("=============================")
 DATA_PARAMS = dict()
-DATA_PARAMS["raw_data_file"] = "./DATA/x_82_ETF_FOREX_5MIN_RETONLY.csv"
+DATA_PARAMS["raw_data_file"] = "./DATA/82_ETF_FOREX_1_DAY.csv"
 DATA_PARAMS["end_split"] = [datetime.datetime(2011,1,1), datetime.datetime(2013,1,1), datetime.datetime(2015,1,1), datetime.datetime(2018,1,1)]
 DATA_PARAMS["TARGET_TO_PREDICT"] = possible_asset[assetindex]
-DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 3
+DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 2
 DATA_PARAMS["TARGET_FUNCTION"] = cumulative_returns
-DATA_PARAMS["SEQ_LEN"] = 60
+DATA_PARAMS["SEQ_LEN"] = 40
 DATA_PARAMS["TARGET_THRESHOLD"] = 0.001
 DATA_PARAMS["FLIP"] = False
 
 MODEL_PARAMS = dict()
-MODEL_PARAMS["BATCH_SIZE"] = 256
+MODEL_PARAMS["BATCH_SIZE"] = 32
 MODEL_PARAMS["EPOCHS"] = 500
 MODEL_PARAMS["PATIENCE"] = 500
 # MODEL_PARAMS["LEARNING_RATE"] = 0.005
-MODEL_PARAMS["LEARNING_RATE"] = 0.0005
+MODEL_PARAMS["LEARNING_RATE"] = 0.00005
 MODEL_PARAMS["monitor_loss"] = "val_loss"
 MODEL_PARAMS["mode_loss"] = "min"
 INIT_TIME =  str(int(time.time()))
-MODEL_PARAMS["project_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME)
-MODEL_PARAMS["models_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "models")
-MODEL_PARAMS["logs_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "logs")
+MODEL_PARAMS["project_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME)
+MODEL_PARAMS["models_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "models")
+MODEL_PARAMS["logs_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "logs")
 
 print("Initialize Parameters: Done!")
 
 locals().update(DATA_PARAMS)
 locals().update(MODEL_PARAMS)
 
-df = load_data(raw_data_file)
-df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP)
+df = load_data_daily_close_missing(raw_data_file)
+df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, False)
 df, X, Y, start_index, end_index, scaler = split_df(df, end_split)
 train_data_gen, val_data_gen, test_1_data_gen, test_2_data_gen, shape_x = TSGenerator(X, Y, SEQ_LEN, BATCH_SIZE, start_index, end_index)
 class_weights = get_class_weights(df, start_index, end_index)
