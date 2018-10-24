@@ -33,7 +33,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = tf.Session(config=config)
 
-#36
+#50
 possible_asset = ['EWZ', 'IWM', 'SPY', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLU', 'IYR',
        'XLV', 'OIH', 'EZU', 'XLB', 'EWT', 'XLY', 'EWH', 'EWW', 'DIA', 'EWY',
        'IBB', 'EWC', 'USDJPY', 'GBPUSD', 'USDCHF', 'USDCAD', 'EURGBP',
@@ -51,24 +51,24 @@ DATA_PARAMS = dict()
 DATA_PARAMS["raw_data_file"] = "./DATA/82_ETF_FOREX_1_DAY.csv"
 DATA_PARAMS["end_split"] = [datetime.datetime(2011,1,1), datetime.datetime(2013,1,1), datetime.datetime(2015,1,1), datetime.datetime(2018,1,1)]
 DATA_PARAMS["TARGET_TO_PREDICT"] = possible_asset[assetindex]
-DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 2
-DATA_PARAMS["TARGET_FUNCTION"] = cumulative_returns
-DATA_PARAMS["SEQ_LEN"] = 40
+DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 3
+DATA_PARAMS["TARGET_FUNCTION"] = "cumulative_returns"
+DATA_PARAMS["SEQ_LEN"] = 20
 DATA_PARAMS["TARGET_THRESHOLD"] = 0.001
 DATA_PARAMS["FLIP"] = False
 
 MODEL_PARAMS = dict()
-MODEL_PARAMS["BATCH_SIZE"] = 32
+MODEL_PARAMS["BATCH_SIZE"] = 64
 MODEL_PARAMS["EPOCHS"] = 500
 MODEL_PARAMS["PATIENCE"] = 500
 # MODEL_PARAMS["LEARNING_RATE"] = 0.005
-MODEL_PARAMS["LEARNING_RATE"] = 0.00005
+MODEL_PARAMS["LEARNING_RATE"] = 0.00001
 MODEL_PARAMS["monitor_loss"] = "val_loss"
 MODEL_PARAMS["mode_loss"] = "min"
 INIT_TIME =  str(int(time.time()))
-MODEL_PARAMS["project_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME)
-MODEL_PARAMS["models_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "models")
-MODEL_PARAMS["logs_folder"] = os.path.join("output", "daily", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "logs")
+MODEL_PARAMS["project_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME)
+MODEL_PARAMS["models_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "models")
+MODEL_PARAMS["logs_folder"] = os.path.join("output", DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "logs")
 
 print("Initialize Parameters: Done!")
 
@@ -89,7 +89,7 @@ save_var(DATA_PARAMS, MODEL_PARAMS, scaler, project_folder)
 
 t0 = time.time()
 
-model = cnn_model_conf_1(shape_x)
+model = rnn_model_conf_1(shape_x)
 adm = keras.optimizers.Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=None, amsgrad=False, decay = 1e-6)
 # f1 = F1Score()
 model.compile(optimizer=adm, loss='binary_crossentropy', metrics=['accuracy', precision, f1])

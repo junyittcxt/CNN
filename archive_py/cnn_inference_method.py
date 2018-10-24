@@ -56,6 +56,9 @@ def model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, ba
             metric_dict[v] = vals
         except:
             metric_dict[v] = [np.nan for f in filenames]
+    mdf = pd.DataFrame(metric_dict)
+    print(mdf)
+    # print(mdf.appl)
 
     if loss_mode == "max":
         best_index = np.argmax(metric_dict[loss_criteria])

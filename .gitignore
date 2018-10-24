@@ -7,3 +7,5 @@ __pycache__/cnn_preproc_function.cpython-35.pyc
 __pycache__/
 
 output/
+
+\.ipynb_checkpoints/
