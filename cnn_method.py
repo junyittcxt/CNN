@@ -35,8 +35,13 @@ def clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET
     #Clean and Create Target
     if filter_tradingday:
         df = filter_off_trading_day(df, target = TARGET_TO_PREDICT, threshold = 0.1)
-        
-    df = create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION)
+
+    if TARGET_FUNCTION == "cumulative_returns":
+        TARGET_FUNCTION_R = cumulative_returns
+    try:
+        df = create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION_R)
+    except:
+        df = create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION)
     df = classify_target(df, "target", TARGET_THRESHOLD, FLIP)
     print("Clean Data: Done!")
 
