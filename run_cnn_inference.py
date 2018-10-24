@@ -38,12 +38,13 @@ config.gpu_options.allow_growth = True
 session = tf.Session(config=config)
 
 #PARAMS:
-main_folder = os.path.join("output","no_scale_models")
+# main_folder = os.path.join("output","no_scale_models")
+main_folder = "Z:/ML Training Data/_CNN_Output/daily"
 setups_folder = [j for j in os.listdir(main_folder) if os.path.isdir(os.path.join(main_folder,j))]
 setup_folder_name = setups_folder[assetindex]
 
 loss_criteria = "precision"
 loss_mode = "max"
 batch_size = 64
-
-model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, batch_size)
+daily = True
+model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, batch_size, daily)

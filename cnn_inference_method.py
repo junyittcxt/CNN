@@ -21,7 +21,7 @@ import os
 
 from sklearn.externals import joblib
 
-def model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, batch_size = 64):
+def model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, batch_size = 64, daily = False):
     #SETUP INIT
     setup_path = os.path.join(main_folder, setup_folder_name)
     DATA_PARAMS = joblib.load(os.path.join(setup_path, "DATA_PARAMS.pkl"))
@@ -35,29 +35,38 @@ def model_inference(main_folder, setup_folder_name, loss_criteria, loss_mode, ba
 
     print(DATA_PARAMS)
     print(MODEL_PARAMS)
+    if daily:
+        df = load_data_daily_close_missing(raw_data_file)
+        df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, False)
+    else:
+        df = load_data(raw_data_file)
+        df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, True)
 
-    df = load_data(raw_data_file)
-    df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP)
-    df, timestamp, all_data_gen = FullTSGenerator(df, scaler, batch_size, SEQ_LEN, old = True)
+    df, timestamp, all_data_gen = FullTSGenerator(df, scaler, batch_size, SEQ_LEN, old = False)
 
     #pick best model
     models_folder = os.path.join(setup_path, "models")
     files = [f for f in os.listdir(models_folder) if os.path.isfile(os.path.join(models_folder,f))]
+    filenames = [f.split(".model")[0] for f in files]
     metric_dict = dict()
     metrics_1 = ["index", "loss", "accuracy", "precision", "f1"]
     for j,v in enumerate(metrics_1):
         try:
-            metric_dict[v] = [int(f.split("-")[j+1]) for f in files]
+            vals = [float(f.split("-")[j+1]) for f in filenames]
+            metric_dict[v] = vals
         except:
-            metric_dict[v] = [np.nan for f in files]
+            metric_dict[v] = [np.nan for f in filenames]
 
     if loss_mode == "max":
         best_index = np.argmax(metric_dict[loss_criteria])
     else:
         best_index = np.argmin(metric_dict[loss_criteria])
 
+    best_index = 10
+    print("Best index:", best_index)
     best_model_file = files[best_index]
     best_model_path = os.path.join(models_folder,best_model_file)
+    print("best_model_path:", best_model_path)
     model = keras.models.load_model(best_model_path, custom_objects=None, compile=False)
     print("Best Model: Done!")
 
