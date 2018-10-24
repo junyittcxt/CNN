@@ -8,4 +8,8 @@ __pycache__/
 
 output/
 
+output_sell_daily_rnn/
+
+R1D1q01/
+
 \.ipynb_checkpoints/
