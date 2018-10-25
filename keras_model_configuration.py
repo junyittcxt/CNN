@@ -45,3 +45,24 @@ def rnn_model_conf_1(shape_x):
 
     model.add(keras.layers.Dense(1, activation='sigmoid'))
     return model
+
+
+def multi_cnn_model_conf_1(shape_x, shape_y):
+    model = keras.models.Sequential()
+    model.add(keras.layers.Reshape([shape_x[1],shape_x[2],1], input_shape=(shape_x[1],shape_x[2])))
+    model.add(keras.layers.Conv2D(128, kernel_size=(15,1), activation='relu'))
+    model.add(keras.layers.Conv2D(16, kernel_size=(2,1), activation='relu'))
+    model.add(keras.layers.Flatten())
+    model.add(keras.layers.Dense(shape_y[1], activation='sigmoid'))
+    return model
+
+def multi_rnn_model_conf_1(shape_x, shape_y):
+    model = keras.models.Sequential()
+    # model.add(keras.layers.CuDNNLSTM(32, input_shape=(shape_x[1],shape_x[2]), return_sequences = True))
+    model.add(keras.layers.CuDNNLSTM(32, input_shape=(shape_x[1],shape_x[2])))
+    # model.add(keras.layers.CuDNNLSTM(64))
+    model.add(keras.layers.Dense(32, activation='relu'))
+    model.add(keras.layers.Dropout(0.7))
+    model.add(keras.layers.Dense(16, activation='relu'))
+    model.add(keras.layers.Dense(shape_y[1], activation='sigmoid'))
+    return model
