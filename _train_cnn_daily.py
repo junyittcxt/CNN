@@ -52,21 +52,21 @@ DATA_PARAMS["raw_data_file"] = "./DATA/82_ETF_FOREX_1_DAY.csv"
 DATA_PARAMS["end_split"] = [datetime.datetime(2011,1,1), datetime.datetime(2013,1,1), datetime.datetime(2015,1,1), datetime.datetime(2018,1,1)]
 DATA_PARAMS["TARGET_TO_PREDICT"] = possible_asset[assetindex]
 DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 5
-DATA_PARAMS["TARGET_FUNCTION"] = "cumulative_returns"
+DATA_PARAMS["TARGET_FUNCTION"] = "mod_sharpe"
 DATA_PARAMS["SEQ_LEN"] = 60
-DATA_PARAMS["TARGET_THRESHOLD"] = 0.001
+DATA_PARAMS["TARGET_THRESHOLD"] = 0
 DATA_PARAMS["FLIP"] = False
 
 MODEL_PARAMS = dict()
 MODEL_PARAMS["BATCH_SIZE"] = 32
-MODEL_PARAMS["EPOCHS"] = 500
-MODEL_PARAMS["PATIENCE"] = 500
+MODEL_PARAMS["EPOCHS"] = 1000
+MODEL_PARAMS["PATIENCE"] = 1000
 # MODEL_PARAMS["LEARNING_RATE"] = 0.005
-MODEL_PARAMS["LEARNING_RATE"] = 0.00001
+MODEL_PARAMS["LEARNING_RATE"] = 0.00002
 MODEL_PARAMS["monitor_loss"] = "val_loss"
 MODEL_PARAMS["mode_loss"] = "min"
 INIT_TIME =  str(int(time.time()))
-MODEL_PARAMS["outputmain_folder"] = os.path.join("output", "RNN_1_long_60_5_day")
+MODEL_PARAMS["outputmain_folder"] = os.path.join("output", "RNNSharpe_1_long_60_5_day")
 MODEL_PARAMS["project_folder"] = os.path.join(MODEL_PARAMS["outputmain_folder"], DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME)
 MODEL_PARAMS["models_folder"] = os.path.join(MODEL_PARAMS["outputmain_folder"], DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "models")
 MODEL_PARAMS["logs_folder"] = os.path.join(MODEL_PARAMS["outputmain_folder"], DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + INIT_TIME, "logs")
@@ -96,7 +96,7 @@ adm = keras.optimizers.Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=
 model.compile(optimizer=adm, loss='binary_crossentropy', metrics=['accuracy', precision, f1])
 
 tensorboard = keras.callbacks.TensorBoard(log_dir=logs_folder)
-filepath = "CNN-{epoch:03d}-{val_loss:.4f}-{val_acc:.4f}-{val_precision:.4f}"
+filepath = "RNNSharpe-{epoch:03d}-{val_loss:.4f}-{val_acc:.4f}-{val_precision:.4f}"
 checkpoint = keras.callbacks.ModelCheckpoint("{}/{}.model".format(models_folder, filepath),
                                                    monitor=monitor_loss,
                                                    verbose=1,

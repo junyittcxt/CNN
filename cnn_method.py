@@ -38,6 +38,9 @@ def clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET
 
     if TARGET_FUNCTION == "cumulative_returns":
         TARGET_FUNCTION_R = cumulative_returns
+    elif TARGET_FUNCTION == "mod_sharpe":
+        TARGET_FUNCTION_R = mod_sharpe
+
     try:
         df = create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION_R)
     except:

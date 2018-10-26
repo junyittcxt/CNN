@@ -9,6 +9,15 @@ def init_dir(directory):
 def cumulative_returns(returns):
     return np.prod(1+np.array(returns)) - 1
 
+def mod_sharpe(returns):
+    n = len(returns)
+    r =  np.prod(1+np.array(returns))-1
+    s = np.std(np.array(returns))
+    ss = r/s
+    if np.isnan(ss):
+        ss = 0
+    return ss
+
 # def reshape2(x):
 #     s = [j for j in x.shape]
 #     x2 = x.reshape(s[0],s[1],s[2],1)
