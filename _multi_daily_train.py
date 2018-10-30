@@ -50,25 +50,26 @@ if assetindex > len(possible_asset):
 
 
 print("=============================")
-print(possible_asset[assetindex])
+print("MULTI")
 print("=============================")
 DATA_PARAMS = dict()
 DATA_PARAMS["raw_data_file"] = "./DATA/82_ETF_FOREX_1_DAY.csv"
 DATA_PARAMS["end_split"] = [datetime.datetime(2011,1,1), datetime.datetime(2013,1,1), datetime.datetime(2015,1,1), datetime.datetime(2018,1,1)]
 DATA_PARAMS["TARGET_TO_PREDICT"] = "Multi"
-DATA_PARAMS["SELECTED_COLS"] = ["SPY", "EWZ", "SMH", "IBB", "EURUSD", "AUDUSD", "GBPUSD"]
-DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 5
+# DATA_PARAMS["SELECTED_COLS"] = ["SPY", "EWZ", "SMH", "IBB", "EURUSD", "AUDUSD", "GBPUSD"]
+DATA_PARAMS["SELECTED_COLS"] = None
+DATA_PARAMS["FUTURE_PERIOD_PREDICT"] = 2
 DATA_PARAMS["TARGET_FUNCTION"] = "cumulative_returns"
-DATA_PARAMS["SEQ_LEN"] = 60
+DATA_PARAMS["SEQ_LEN"] = 20
 DATA_PARAMS["TARGET_THRESHOLD"] = 0.001
 DATA_PARAMS["FLIP"] = False
 
 MODEL_PARAMS = dict()
 MODEL_PARAMS["BATCH_SIZE"] = 64
-MODEL_PARAMS["EPOCHS"] = 500
-MODEL_PARAMS["PATIENCE"] = 500
+MODEL_PARAMS["EPOCHS"] = 1000
+MODEL_PARAMS["PATIENCE"] = 1000
 # MODEL_PARAMS["LEARNING_RATE"] = 0.005
-MODEL_PARAMS["LEARNING_RATE"] = 0.0001
+MODEL_PARAMS["LEARNING_RATE"] = 0.00008
 MODEL_PARAMS["monitor_loss"] = "val_loss"
 MODEL_PARAMS["mode_loss"] = "min"
 INIT_TIME =  str(int(time.time()))

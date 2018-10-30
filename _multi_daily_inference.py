@@ -45,7 +45,7 @@ session = tf.Session(config=config)
 ####################
 #SETUP INIT
 ####################
-output_folder = "/home/workstation/Desktop/CNN/output
+output_folder = "/home/workstation/Desktop/CNN/output"
 setup_folder = "RNN_Multi_1_long_60_5_day"
 main_folder = os.path.join(output_folder, setup_folder)
 collect_signal_folder =  os.path.join(output_folder, "signal_" + setup_folder)
@@ -130,8 +130,9 @@ print("Collect signal.csv: Done!")
 actual_df = pd.DataFrame(Y[lower:], index = Date, columns = y_columns)
 L = np.sum(signal_df.index <= DATA_PARAMS["end_split"][0])
 for i in range(y.shape[1]):
+    print("===============", i, y_columns[i])
     yscore = signal_df.values[L:,i]
     ytrue = actual_df.values[L:,i]
     perf(ytrue,yscore, t = 0.5)
-    print("===============", i)
-    print("===============", i)
+    print("===============", i, y_columns[i])
+    print("===============", i, y_columns[i])

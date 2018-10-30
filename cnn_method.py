@@ -31,6 +31,20 @@ def load_data_daily_close_missing(raw_data_file, missing_threshold = 0.1):
 
     return rdf
 
+def clean_data_breakout_x(df, target_col, breakout_window = 60):
+    price_df = df.fillna(method = "ffill").dropna()
+    return_df = df.pct_change()
+
+    return_df = filter_off_trading_day(return_df, target_col)
+    filtered_index = return_df.index
+    price_df = price_df.reindex(filtered_index)
+    x_df = price_df.rolling(window = breakout_window).apply(lambda x: breakout(x)*1,raw = False)
+    return_df["target"] = return_df[target_col]
+    fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+    fdf.dropna()
+
+    return fdf
+
 def clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, filter_tradingday = True):
     #Clean and Create Target
     if filter_tradingday:
@@ -50,7 +64,7 @@ def clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET
 
     return df
 
-def split_df(df, end_split):
+def split_df(df, end_split, scale = True):
     #Split df and get index
     start_index, end_index = get_index_from_date(df, end_split)
     target_col= "target"
@@ -61,9 +75,10 @@ def split_df(df, end_split):
     scaler = sklearn.preprocessing.StandardScaler()
     #Fit train_x
     train_x_data = df[x_columns].iloc[start_index[0]:(end_index[0]+1)].values
-    scaler.fit(train_x_data)
-    #Scale all
-    df.loc[:,x_columns] = scaler.transform(df[x_columns])
+    if scale:
+        scaler.fit(train_x_data)
+        #Scale all
+        df.loc[:,x_columns] = scaler.transform(df[x_columns])
     X = df[x_columns].values
     Y = df[target_col].values
 

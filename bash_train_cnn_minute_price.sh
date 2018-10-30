@@ -1,18 +1,22 @@
-for asset in {29..50}
+for asset in {0..28}
 do
 echo "================="
 echo "================="
 echo $asset
 echo "================="
 echo "================="
-python3 _train_cnn_minute.py -a $asset -d 0
-done
+python3 _train_cnn_minute_price.py -a $asset -d 0
+done &
 
-# for asset in {25..50}
-# do
-# echo $asset
-# python3 _train_cnn_minute.py -a $asset -d 0
-# done
+for asset in {29..58}
+do
+echo "================="
+echo "================="
+echo $asset
+echo "================="
+echo "================="
+python3 _train_cnn_minute_price.py -a $asset -d 0
+done
 
 echo All done
 

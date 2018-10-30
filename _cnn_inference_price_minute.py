@@ -25,7 +25,7 @@ from sklearn.externals import joblib
 #OPTS PARSER
 optparser = optparse.OptionParser()
 optparser.add_option("-a", "--assetindex", default=0, help="assetindex")
-optparser.add_option("-d", "--gpudevice", default="1", help="gpudevice")
+optparser.add_option("-d", "--gpudevice", default="0", help="gpudevice")
 opts = optparser.parse_args()[0]
 
 assetindex = int(opts.assetindex)
@@ -69,13 +69,13 @@ scaler = joblib.load(os.path.join(setup_path, "scaler.pkl"))
 locals().update(DATA_PARAMS)
 locals().update(MODEL_PARAMS)
 
-if daily:
-    df = load_data_daily_close_missing(raw_data_file)
-    df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, False)
-else:
-    df = load_data(raw_data_file)
-    df = clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, True)
 
+df = load_data(raw_data_file)
+df = clean_data_breakout_x(df, target_col = TARGET_TO_PREDICT, breakout_window = BREAKOUT_WINDOW)
+df = create_target_2(df, "target", FUTURE_PERIOD_PREDICT, TARGET_FUNCTION)
+df = classify_target(df, "target", TARGET_THRESHOLD, FLIP)
+
+df, X, Y, start_index, end_index, scaler = split_df(df, end_split, scale = True)
 df, timestamp, all_data_gen = FullTSGenerator(df, scaler, batch_size, SEQ_LEN, old = False)
 
 #Pick best model

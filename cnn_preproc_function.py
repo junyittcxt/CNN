@@ -24,12 +24,32 @@ def mod_sharpe(returns):
 #
 #     return x2, s
 
+def breakout(p):
+    p = np.array(p)
+    if p[-1] > np.max(p[0:-1]):
+        return 1
+    elif p[-1] < np.min(p[0:-1]):
+        return -1
+    else:
+        return 0
+
 def filter_off_trading_day(df, target, threshold = 0.1):
     df["hh"] = df.index.hour
     df["mm"] = df.index.minute
     df["ss"] = df.index.second
     df["wkday"] = df.index.weekday
     df = df.groupby(["hh", "mm", "ss", "wkday"]).filter(lambda x: np.mean(x[target]!=0) > threshold)
+    return df
+
+def create_target_2(df, target_col, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION = "cumulative_returns", keras_preproc = True):
+    if TARGET_FUNCTION == "cumulative_returns":
+        TARGET_FUNCTION_R = cumulative_returns
+    elif TARGET_FUNCTION == "mod_sharpe":
+        TARGET_FUNCTION_R = mod_sharpe
+
+    df.loc[:,'target'] = df[target_col].rolling(window = FUTURE_PERIOD_PREDICT).apply(lambda x: TARGET_FUNCTION_R(x))
+    df.loc[:,'target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT+1)
+    df = df.dropna()
     return df
 
 def create_target(df, target_col, FUTURE_PERIOD_PREDICT, FUNC = cumulative_returns, keras_preproc = True):

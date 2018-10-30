@@ -1,4 +1,4 @@
-for asset in {29..50}
+for asset in {30..50}
 do
 echo "================="
 echo "================="
