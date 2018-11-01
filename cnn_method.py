@@ -6,7 +6,12 @@ import sklearn
 from sklearn import preprocessing
 from sklearn.utils import class_weight
 from sklearn.externals import joblib
+
+import keras
 from keras.preprocessing.sequence import TimeseriesGenerator
+
+from keras_model_configuration import *
+from keras_metric import *
 
 def load_data(raw_data_file):
     #Load
@@ -98,22 +103,23 @@ def TSGenerator(X, Y, SEQ_LEN, BATCH_SIZE, start_index, end_index):
                                    batch_size=BATCH_SIZE,
                                    shuffle=False,
                                    start_index=start_index[1], end_index=end_index[1])
-    test_1_data_gen = TimeseriesGenerator(X, Y,
+    val_2_data_gen = TimeseriesGenerator(X, Y,
                                    length=SEQ_LEN, sampling_rate=1,
                                    batch_size=BATCH_SIZE,
                                    shuffle=False,
                                    start_index=start_index[2], end_index=end_index[2])
-    test_2_data_gen = TimeseriesGenerator(X, Y,
-                                   length=SEQ_LEN, sampling_rate=1,
-                                   batch_size=BATCH_SIZE,
-                                   shuffle=False,
-                                   start_index=start_index[3], end_index=end_index[3])
+    test_data_gen = None
+    # test_data_gen = TimeseriesGenerator(X, Y,
+    #                                length=SEQ_LEN, sampling_rate=1,
+    #                                batch_size=BATCH_SIZE,
+    #                                shuffle=False,
+    #                                start_index=start_index[3], end_index=end_index[3])
     shape_x = train_data_gen[0][0].shape
     print(shape_x)
     print("Number of batches per epoch:", len(train_data_gen))
     print("TSGenerator: Done!")
 
-    return train_data_gen, val_data_gen, test_1_data_gen, test_2_data_gen, shape_x
+    return train_data_gen, val_data_gen, val_2_data_gen, test_data_gen, shape_x
 
 def get_class_weights(df, start_index, end_index):
     #Calculate class_weights
@@ -131,6 +137,33 @@ def save_var(DATA_PARAMS, MODEL_PARAMS, scaler, project_folder):
     joblib.dump(scaler, os.path.join(project_folder,'scaler.pkl'))
     print("Data Saved!")
 
+def keras_training(keras_model_function, shape_x, LEARNING_RATE, logs_folder, models_folder, train_data_gen, val_data_gen, EPOCHS, class_weights):
+    if keras_model_function == "rnn_model_conf_1_best":
+        KERAS_FUN = rnn_model_conf_1_best
+
+    model = KERAS_FUN(shape_x)
+    adm = keras.optimizers.Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=None, amsgrad=False, decay = 1e-6)
+    model.compile(optimizer=adm, loss='binary_crossentropy', metrics=['accuracy', precision, f1])
+
+    tensorboard = keras.callbacks.TensorBoard(log_dir=logs_folder)
+    filepath = "DL-{epoch:04d}-{val_loss:.4f}-{val_acc:.4f}-{val_precision:.4f}-{val_f1:.4f}"
+    checkpoint = keras.callbacks.ModelCheckpoint("{}/{}.model".format(models_folder, filepath),
+                                                       monitor="val_loss",
+                                                       verbose=1,
+                                                       save_best_only=False,
+                                                       save_weights_only=False,
+                                                       mode="auto",
+                                                       period=3)
+
+    history = model.fit_generator(generator=train_data_gen,
+                                  validation_data=val_data_gen,
+                                  epochs=EPOCHS,
+                                  class_weight=class_weights,
+                                  callbacks=[tensorboard, checkpoint],
+                                  verbose=1)
+    return model, history
+
+
 
 ########################
 #INFERENCE
@@ -147,6 +180,12 @@ def FullTSGenerator(df, scaler, batch_size, SEQ_LEN, old = False):
     X = df[x_columns].values
     Y = df[target_col].values
 
+    all_data_gen = TimeseriesGenerator(X, Y, length=SEQ_LEN, batch_size=batch_size, shuffle=False)
+    timestamp = df.index[SEQ_LEN:]
+    return df, timestamp, all_data_gen
+
+
+def FullTSGeneratorDirect(df, X, Y, SEQ_LEN, batch_size = 64):
     all_data_gen = TimeseriesGenerator(X, Y, length=SEQ_LEN, batch_size=batch_size, shuffle=False)
     timestamp = df.index[SEQ_LEN:]
     return df, timestamp, all_data_gen
