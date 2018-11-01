@@ -160,7 +160,7 @@ def keras_training(keras_model_function, shape_x, LEARNING_RATE, logs_folder, mo
                                   epochs=EPOCHS,
                                   class_weight=class_weights,
                                   callbacks=[tensorboard, checkpoint],
-                                  verbose=1)
+                                  verbose=0)
     return model, history
 
 
