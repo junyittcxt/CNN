@@ -41,8 +41,14 @@ session = tf.Session(config=config)
 ####################
 #SETUP INIT
 ####################
-main_folder = "/home/workstation/Desktop/CNN/output/R2M60p01_RNN_3_Min_60_Breakout_Long_5_1"
-collect_signal_folder = "/home/workstation/Desktop/CNN/output/SIGNAL_R2M60p01_RNN_3_Min_60_Breakout_Long_5_1"
+output_folder =  "/home/workstation/Desktop/CNN/output/"
+setup_folder = "R3M30q01_RNN_3_Min_30_Breakout_Short_90_10_1"
+
+# output_folder =  "/media/workstation/9EB4ABE9B4ABC1DF/DL_Output/"
+# setup_folder = "R2M60p01_RNN_3_Min_60_Breakout_Long_5_1"
+
+main_folder = os.path.join(output_folder, setup_folder)
+collect_signal_folder =  os.path.join(output_folder, "SIGNAL_" + setup_folder)
 daily = False
 
 batch_size = 64

@@ -19,6 +19,7 @@ import datetime
 import time
 import os
 import shutil
+import glob
 
 from sklearn.externals import joblib
 
@@ -41,9 +42,17 @@ session = tf.Session(config=config)
 ####################
 #SETUP INIT
 ####################
-main_folder = "/home/workstation/Desktop/CNN/output/R2M60p01_RNN_3_Min_60_Breakout_Long_5_1"
-collect_signal_folder = "/home/workstation/Desktop/CNN/output/SIGNAL_R2M60p01_RNN_3_Min_60_Breakout_Long_5_1"
-daily = False
+# output_folder =  "/home/workstation/Desktop/CNN/output/"
+# setup_folder = "R2M60q01_RNN_3_Min_60_Breakout_Short_5_1"
+
+output_folder =  "/media/workstation/9EB4ABE9B4ABC1DF/DL_Output/"
+setup_folder = "RS02_RNNSharpe_1_Day_1_Threshold_-1_60_5"
+
+
+main_folder = os.path.join(output_folder, setup_folder)
+collect_signal_folder =  os.path.join(output_folder, "SIGNAL_" + setup_folder)
+
+daily = True
 
 batch_size = 64
 
@@ -95,8 +104,14 @@ print("Prediction: Done!", t1-t0, "seconds!")
 #Remove existing signal file
 try:
     os.remove(glob.glob(os.path.join(main_folder, setup_folder_name, "*.csv"))[0])
+
 except:
     print("Error deleting signal.csv:", setup_folder_name)
+
+try:
+    os.remove(glob.glob(os.path.join(main_folder, setup_folder_name, "*.model"))[0])
+except:
+    print("Error deleting model!")
 
 #Signal Output
 signal_df = pd.DataFrame(dict(Date = timestamp, signal_raw = y.flatten())).set_index("Date")

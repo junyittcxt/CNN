@@ -33,20 +33,32 @@ def vect_inverse_percentile(arr):
 
 def best_model_score(mdf):
     mdf2 = mdf.set_index("index").sort_index()
+    mdf2["f1"] = mdf2["f1"].fillna(1)
     mdf2["f1_2"] = vect_inverse_percentile(mdf2["f1"].values)
     mdf2["accuracy_2"] = vect_inverse_percentile(mdf2["accuracy"].values)
     mdf2["precision_2"] = vect_inverse_percentile(mdf2["precision"].values)
     mdf2["loss_2"] = vect_inverse_percentile(mdf2["loss"].values)
 
+
+
     mdf2["score"] = (mdf2["f1_2"] + mdf2["accuracy_2"] + 2*mdf2["precision_2"])/4 - mdf2["loss_2"]
+
     mdf2["chg_score_1"] = np.abs(mdf2["score"]-mdf2["score"].shift(1)) + 1e-6
     mdf2["chg_score_5"] = np.abs(mdf2["score"]-mdf2["score"].shift(5)) + 1e-6
     mdf2["chg_score_10"] = np.abs(mdf2["score"]-mdf2["score"].shift(10)) + 1e-6
     mdf2["chg_score_agg"] = np.power(mdf2["chg_score_1"]*mdf2["chg_score_5"]*mdf2["chg_score_10"],1/3)
     mdf2["final_score"] = mdf2["score"]/mdf2["chg_score_agg"]
 
-    fmdf = mdf2.sort_values("final_score", ascending = False)
+
+    u1 = mdf2["f1"] != 0
+    u2 = mdf2["precision"] != 0
+    u3 = u1 & u2
+
+    fmdf = mdf2[u3].sort_values("final_score", ascending = False)
+    if len(fmdf) == 0:
+        fmdf = mdf2.sort_values("final_score", ascending = False)
     best_file = fmdf["files"].values[0]
+
     return fmdf, best_file
 
 def best_model_score_multi(mdf):
@@ -55,7 +67,7 @@ def best_model_score_multi(mdf):
     mdf2["loss_2"] = vect_inverse_percentile(mdf2["loss"].values)
 
     mdf2["score"] = mdf2["accuracy_2"] - mdf2["loss_2"]
-    mdf2["chg_score_1"] = np.abs(mdf2["score"]-mdf2["score"].shift(1)) 
+    mdf2["chg_score_1"] = np.abs(mdf2["score"]-mdf2["score"].shift(1))
     mdf2["chg_score_5"] = np.abs(mdf2["score"]-mdf2["score"].shift(5))
     mdf2["chg_score_10"] = np.abs(mdf2["score"]-mdf2["score"].shift(10))
     mdf2["chg_score_agg"] = (mdf2["chg_score_1"]+mdf2["chg_score_5"]+mdf2["chg_score_10"])/3
