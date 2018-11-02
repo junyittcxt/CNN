@@ -149,7 +149,7 @@ def keras_training(keras_model_function, shape_x, LEARNING_RATE, logs_folder, mo
     filepath = "DL-{epoch:04d}-{val_loss:.4f}-{val_acc:.4f}-{val_precision:.4f}-{val_f1:.4f}"
     checkpoint = keras.callbacks.ModelCheckpoint("{}/{}.model".format(models_folder, filepath),
                                                        monitor="val_loss",
-                                                       verbose=1,
+                                                       verbose=0,
                                                        save_best_only=False,
                                                        save_weights_only=False,
                                                        mode="auto",

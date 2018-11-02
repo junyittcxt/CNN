@@ -92,6 +92,7 @@ def full_train_minute_price(DATA_PARAMS, MODEL_PARAMS):
 
     globals().update(DATA_PARAMS)
     globals().update(MODEL_PARAMS)
+    print(TARGET_TO_PREDICT)
 
     print("====== PREPROCESSING =======")
     t0 = time.time()
@@ -140,7 +141,7 @@ def full_train_minute_price(DATA_PARAMS, MODEL_PARAMS):
 
     #Signal Output
     signal_df = pd.DataFrame(dict(Date = timestamp, signal_raw = y.flatten())).set_index("Date")
-    signal_file = "signal_" + TARGET_TO_PREDICT + "_" + str(FLIP) + ".csv"
+    signal_file = "signal_" + TARGET_TO_PREDICT + "_" + str(FLIP) + "_" + str(INIT_TIME) + ".csv"
     signal_df.to_csv(os.path.join(project_folder, signal_file))
     print("Prop:", np.mean(signal_df["signal_raw"] > 0.5))
     print("Signal Output: Done!")

@@ -56,7 +56,7 @@ def initialize_path_parameters(DATA_PARAMS, MODEL_PARAMS, TARGET_TO_PREDICT = No
 
     MODEL_PARAMS["INIT_TIME"] = str(int(time.time()))
     MODEL_PARAMS["ASSET_FOLDER_NAME"] = DATA_PARAMS["TARGET_TO_PREDICT"] + "_" + MODEL_PARAMS["INIT_TIME"]
-    MODEL_PARAMS["root_output_folder"] = "output"
+    # MODEL_PARAMS["root_output_folder"] = "output"
     MODEL_PARAMS["outputmain_folder"] = os.path.join(MODEL_PARAMS["root_output_folder"], MODEL_PARAMS["training_code"], "ASSETS_MODELS")
     MODEL_PARAMS["collect_signal_folder"] = os.path.join(MODEL_PARAMS["root_output_folder"], MODEL_PARAMS["training_code"], "SIGNAL")
     MODEL_PARAMS["collect_bestmodel_folder"] = os.path.join(MODEL_PARAMS["root_output_folder"], MODEL_PARAMS["training_code"], "BESTMODEL")
