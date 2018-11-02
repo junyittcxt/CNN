@@ -1,12 +1,20 @@
-from cnn_preproc_function import *
+import warnings
 
-import numpy as np
-import pandas as pd
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
 import sklearn
 from sklearn import preprocessing
 from sklearn.utils import class_weight
-from sklearn.externals import joblib
 
+from cnn_preproc_function import *
+import numpy as np
+import pandas as pd
+
+# from sklearn.externals import joblib
+import joblib
 import keras
 from keras.preprocessing.sequence import TimeseriesGenerator
 
