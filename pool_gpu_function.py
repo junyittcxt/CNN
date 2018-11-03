@@ -39,7 +39,7 @@ def run_one_setup(json_setup_file):
 
     t1 = time.time()
 
-    print("Setup Done,", json_setup_file, ". Time Elapsed:", t1-t0, "seconds.")
+    print("Setup Done,", json_setup_file, ". Time Elapsed:", (t1-t0)/3600, "hours.")
 
 
 def run_by_gpu(json_files, gpu):

@@ -11,9 +11,9 @@ from _full_train_minute_price import *
 
 def run_process(param):
     DATA_PARAMS, MODEL_PARAMS, TARGET_TO_PREDICT = param
-    #print(TARGET_TO_PREDICT)
-    #time.sleep(1)
-    #return [1, TARGET_TO_PREDICT, "ok", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+    print("========================")
+    print(TARGET_TO_PREDICT)
+    print("========================")
     try:
         DATA_PARAMS, MODEL_PARAMS = initialize_path_parameters(DATA_PARAMS, MODEL_PARAMS, TARGET_TO_PREDICT)
         full_train_minute_price(DATA_PARAMS, MODEL_PARAMS)
