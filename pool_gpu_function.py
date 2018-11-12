@@ -17,6 +17,9 @@ def run_process(param):
         full_train_minute_price(DATA_PARAMS, MODEL_PARAMS)
         return [1, TARGET_TO_PREDICT, "ok", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
     except Exception as err:
+        print("===================")
+        print(err)
+        print("===================")
         return [0, TARGET_TO_PREDICT, err, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
 
 def run_one_setup(json_setup_file):
