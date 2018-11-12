@@ -7,7 +7,7 @@ from multiprocessing import Pool
 import multiprocessing as mp
 
 from parse_json_param import *
-from _full_train_minute_price import *
+from _v2_full_train_minute_price import *
 import numpy as np
 
 def run_process(param):

@@ -18,6 +18,13 @@ def mod_sharpe(returns):
         ss = 0
     return ss
 
+def diff_probability(returns):
+    n = len(returns)
+    r = np.array(returns)
+    d = np.sum(r > 0) - np.sum(r < 0)
+
+    return d/n
+
 # def reshape2(x):
 #     s = [j for j in x.shape]
 #     x2 = x.reshape(s[0],s[1],s[2],1)
@@ -46,6 +53,8 @@ def create_target_2(df, target_col, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION = "cu
         TARGET_FUNCTION_R = cumulative_returns
     elif TARGET_FUNCTION == "mod_sharpe":
         TARGET_FUNCTION_R = mod_sharpe
+    elif TARGET_FUNCTION == "mod_prob":
+        TARGET_FUNCTION_R = diff_probability
 
     df.loc[:,'target'] = df[target_col].rolling(window = FUTURE_PERIOD_PREDICT).apply(lambda x: TARGET_FUNCTION_R(x))
     df.loc[:,'target'] = df['target'].shift(-FUTURE_PERIOD_PREDICT+1)

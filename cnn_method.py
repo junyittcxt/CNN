@@ -44,6 +44,15 @@ def load_data_daily_close_missing(raw_data_file, missing_threshold = 0.1):
 
     return rdf
 
+def clean_data_x(df, target_col, window, method = "breakout_only_x"):
+    if method == "breakout_only_x":
+        df = clean_data_breakout_x(df, target_col = target_col, breakout_window = window)
+    if method == "prob_only_x":
+        df = clean_data_prob_x(df, target_col = target_col, window = window)
+
+    return df
+
+    
 def clean_data_breakout_x(df, target_col, breakout_window = 60):
     price_df = df.fillna(method = "ffill").dropna()
     return_df = df.pct_change()
@@ -57,6 +66,19 @@ def clean_data_breakout_x(df, target_col, breakout_window = 60):
     fdf.dropna()
 
     return fdf
+
+def clean_data_prob_x(df, target_col, window):
+    price_df = df.fillna(method = "ffill").dropna()
+    return_df = df.pct_change()
+    rdf2 = return_df.copy()
+
+    return_df = filter_off_trading_day(return_df, target_col)
+    x_df = rdf2.rolling(window = window).apply(lambda x: diff_probability(x)*1,raw = False)
+    return_df["target"] = return_df[target_col]
+    fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+
+    return fdf
+
 
 def clean_and_create_target(df, TARGET_TO_PREDICT, FUTURE_PERIOD_PREDICT, TARGET_FUNCTION, TARGET_THRESHOLD, FLIP, filter_tradingday = True):
     #Clean and Create Target
