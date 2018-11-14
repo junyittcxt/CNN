@@ -34,9 +34,9 @@ def main():
 
     t_all_2 = time.time()
 
-print("Everything Done:", (t_all_2 - t_all)/3600, "hours")
-print("Json files:", json_files)
-print("Number of json:", len(json_files))
+    print("Everything Done:", (t_all_2 - t_all)/3600, "hours")
+    print("Json files:", json_files)
+    print("Number of json:", len(json_files))
 
 if __name__ == "__main__":
     main()
