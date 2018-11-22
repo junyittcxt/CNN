@@ -11,10 +11,21 @@ from parse_json_param import *
 from _full_train_minute_price import *
 import numpy as np
 
+optparser = optparse.OptionParser()
+optparser.add_option("-j", "--jsonfolder", default="", help="json_folder")
+opts = optparser.parse_args()[0]
+
+jsonfolder = str(opts.jsonfolder)
+
 def main():
     t_all = time.time()
+    if jsonfolder == "":
+        json_files = glob.glob(os.path.join("json_setup", "*.json"))
+    else:
+        json_files = glob.glob(os.path.join("json_setup", jsonfolder, "*.json"))
+        if len(json_files) == 0:
+            raise Exception("NO JSON FILES!")
 
-    json_files = glob.glob(os.path.join("json_setup", "*.json"))
     json_and_device = dict()
     json_and_device["json"] = []
     json_and_device["device"] = []
