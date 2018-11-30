@@ -39,10 +39,13 @@ def full_train_minute_price(DATA_PARAMS, MODEL_PARAMS):
 
     globals().update(DATA_PARAMS)
     globals().update(MODEL_PARAMS)
-    print(TARGET_TO_PREDICT)
+
+    print("TARGET_TO_PREDICT:", TARGET_TO_PREDICT)
 
     try:
         CLEAN_METHOD_X = DATA_PARAMS["CLEAN_METHOD_X"]
+        print("CLEAN_METHOD_X:", CLEAN_METHOD_X)
+
     except:
         print("CLEAN_METHOD_X default to breakout_only_x")
         CLEAN_METHOD_X = "breakout_only_x"

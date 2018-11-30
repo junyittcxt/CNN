@@ -1,0 +1,13 @@
+Strategy,Code,Location,B,S,Asset_B,Asset_S
+1190,X_C001,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_X_C001_B_5,C001_D0H0M30_B,C001_D0H0M30_S,"DIA, SMH, XBI",-
+1195,W_B001,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W_B001_BS_10,B001B_D0H1M0_B,B001S_D0H1M0_S,"AGG, EFA, EURUSD, IEF, TLT","AGG, EFA, EURUSD, IEF, TLT"
+1197,W_B003,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W_B003_BS_10,B003B_D0H1M0_B,B003S_D0H1M0_S,"GLD, LQD, RSX, USO, XLV","GLD, LQD, RSX, USO, XLV"
+1198,Z_C007,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_C007_5_S,C007B_D0H0M5_B,C007S_D0H0M5_S,-,"AUDUSD, NZDUSD, XAUUSD"
+1199,Z_C010,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_C010_10_BS,C010B_D0H0M5_B,C010S_D0H0M5_S,USDCAD,USDCAD
+1202,W006,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W006_10_BS,W006B_D0H1M0_B,W006S_D0H1M0_S,"EWJ, EWW, TLT, USDCAD, USDJPY, VWO, XBI, XLK, XLY","EWJ, EWW, TLT, USDCAD, USDJPY, VWO, XBI, XLK, XLY"
+1202_2,W006,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W006_10_BS,W006B_D0H1M0_B,W006S_D0H1M0_S,"EWG, EWJ, NZDUSD, TLT, VWO, XBI, XLE","EWG, EWJ, NZDUSD, TLT, VWO, XBI, XLE"
+1203,Y001,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_Y001_10_BS,Y001B_D0H0M15_B,Y001S_D0H0M15_S,"EEM, EMB, EURUSD, EWJ, GBPUSD, IBB, NZDUSD, UNG, USDCHF, XBI","EEM, EMB, EURUSD, EWJ, GBPUSD, IBB, NZDUSD, UNG, USDCHF, XBI"
+1203_2,Y001,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_Y001_10_BS,Y001B_D0H0M15_B,Y001S_D0H0M15_S,"DBC, EMB, NZDUSD, XAUUSD, XBI","DBC, EMB, NZDUSD, XAUUSD, XBI"
+1203_3,Y001,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_Y001_10_BS,Y001B_D0H0M15_B,Y001S_D0H0M15_S,"EMB, NZDUSD, XBI, XLE","EMB, NZDUSD, XBI, XLE"
+1220_1,W008,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W008,W008B_D0H1M0_B,W008S_D0H1M0_S,"IEF, XLF, XLY",-
+1220_2,W008,/media/workstation/Storage/DL_Output/_Done_Accepted/Done_Accepted_W008,W008B_D0H1M0_B,W008S_D0H1M0_S,"IEF, USDCAD, XLB, XLF, XLP",-

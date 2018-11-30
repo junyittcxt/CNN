@@ -44,38 +44,64 @@ def load_data_daily_close_missing(raw_data_file, missing_threshold = 0.1):
 
     return rdf
 
-def clean_data_x(df, target_col, window, method = "breakout_only_x"):
+def clean_data_x(df, target_col, window, method = "breakout_only_x", accepted_index = None):
+    #deprecated
     if method == "breakout_only_x":
-        df = clean_data_breakout_x(df, target_col = target_col, breakout_window = window)
+        df = clean_data_breakout_x(df, target_col = target_col, breakout_window = window, accepted_index = accepted_index)
     if method == "prob_only_x":
-        df = clean_data_prob_x(df, target_col = target_col, window = window)
+        df = clean_data_prob_x(df, target_col = target_col, window = window, accepted_index = accepted_index)
 
     return df
 
-    
-def clean_data_breakout_x(df, target_col, breakout_window = 60):
-    price_df = df.fillna(method = "ffill").dropna()
-    return_df = df.pct_change()
+#this clean_breakout does not fill hh,mm,ss, wkday*
+def clean_data_breakout_x(df, target_col, breakout_window = 60, accepted_index = None):
+    if accepted_index is None:
+        price_df = df.fillna(method = "ffill").dropna()
+        return_df = price_df.pct_change()
 
-    return_df = filter_off_trading_day(return_df, target_col)
-    filtered_index = return_df.index
-    price_df = price_df.reindex(filtered_index)
-    x_df = price_df.rolling(window = breakout_window).apply(lambda x: breakout(x)*1,raw = False)
-    return_df["target"] = return_df[target_col]
-    fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
-    fdf.dropna()
+        return_df = filter_off_trading_day(return_df, target_col)
+        filtered_index = return_df.index
+        price_df = price_df.reindex(filtered_index)
+        x_df = price_df.rolling(window = breakout_window).apply(lambda x: breakout(x)*1,raw = False)
+        return_df["target"] = return_df[target_col]
+
+        fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+        fdf.dropna()
+    else:
+        price_df = df.fillna(method = "ffill").dropna()
+        return_df = price_df.pct_change()
+
+        return_df = filter_df_by_accepted_index(return_df, accepted_index)
+        price_df = filter_df_by_accepted_index(price_df, accepted_index)
+
+        x_df = price_df.rolling(window = breakout_window).apply(lambda x: breakout(x)*1,raw = False)
+        return_df["target"] = return_df[target_col]
+
+        fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+        fdf.dropna()
 
     return fdf
 
-def clean_data_prob_x(df, target_col, window):
-    price_df = df.fillna(method = "ffill").dropna()
-    return_df = df.pct_change()
-    rdf2 = return_df.copy()
+#this clean_prob does not fill hh,mm,ss, wkday*
+def clean_data_prob_x(df, target_col, window, accepted_index = None):
+    if accepted_index is None:
+        price_df = df.fillna(method = "ffill").dropna()
+        return_df = df.pct_change()
+        rdf2 = return_df.copy()
 
-    return_df = filter_off_trading_day(return_df, target_col)
-    x_df = rdf2.rolling(window = window).apply(lambda x: diff_probability(x)*1,raw = False)
-    return_df["target"] = return_df[target_col]
-    fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+        return_df = filter_off_trading_day(return_df, target_col)
+        x_df = rdf2.rolling(window = window).apply(lambda x: diff_probability(x)*1,raw = False)
+        return_df["target"] = return_df[target_col]
+        fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
+    else:
+        price_df = df.fillna(method = "ffill").dropna()
+        return_df = price_df.pct_change()
+        rdf2 = return_df.copy()
+
+        return_df = filter_df_by_accepted_index(return_df, accepted_index)
+        x_df = rdf2.rolling(window = window).apply(lambda x: diff_probability(x)*1,raw = False)
+        return_df["target"] = return_df[target_col]
+        fdf = pd.merge(x_df, return_df[["target"]], left_index = True, right_index = True)
 
     return fdf
 

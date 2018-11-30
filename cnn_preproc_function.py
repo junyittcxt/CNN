@@ -1,6 +1,50 @@
 import numpy as np
 import pandas as pd
 import os
+import functools
+
+def reduce_concat(x, sep=""):
+    return functools.reduce(lambda x, y: str(x) + sep + str(y), x)
+
+def paste(*lists, sep=" ", collapse=None):
+    result = map(lambda x: reduce_concat(x, sep=sep), zip(*lists))
+    if collapse is not None:
+        return reduce_concat(result, sep=collapse)
+    return list(result)
+
+def add_time_column(df):
+    df["hh"] = df.index.hour
+    df["mm"] = df.index.minute
+    df["ss"] = df.index.second
+    df["wkday"] = df.index.weekday
+    return df
+
+def add_temp_time_group(df):
+    df["temp_time"] = paste(df["hh"], df["mm"], df["ss"], df["wkday"], sep = ",")
+    return df
+
+def target_accepted_index(df, target):
+    temp_df = pd.DataFrame()
+    y = df[target].values
+    z = paste(df["hh"], df["mm"], df["ss"], df["wkday"], sep = ",")
+    temp_df["z"] = z
+    temp_df["y"] = y
+    temp_df = temp_df.dropna()
+    h = temp_df.groupby("z").apply(lambda x: np.mean(x)!=0)
+    accepted_index = h.loc[h["y"]].index
+
+    return accepted_index
+
+def filter_df_by_accepted_index(df, accepted_index):
+    df = add_time_column(df)
+    df = add_temp_time_group(df)
+    subset = [j in accepted_index.values for j in df["temp_time"].values]
+    df = df.loc[subset]
+    df = df.drop(["hh", "mm", "ss", "wkday","temp_time"], axis = 1)
+
+    return df
+
+
 
 def init_dir(directory):
     if not os.path.exists(directory):
