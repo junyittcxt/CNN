@@ -2,14 +2,15 @@ import os
 import glob
 import time
 import json
+import numpy as np
 import pandas as pd
 from multiprocessing import Pool
 import multiprocessing as mp
 
 from pool_gpu_function import *
 from parse_json_param import *
-from _full_train_minute_price import *
-import numpy as np
+from _v2_full_train_minute_price import *
+
 
 optparser = optparse.OptionParser()
 optparser.add_option("-j", "--jsonfolder", default="", help="json_folder")

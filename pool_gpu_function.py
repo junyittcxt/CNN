@@ -3,13 +3,14 @@ import shutil
 import glob
 import time
 import json
+import numpy as np
 import pandas as pd
 from multiprocessing import Pool
 import multiprocessing as mp
 
 from parse_json_param import *
 from _v2_full_train_minute_price import *
-import numpy as np
+
 
 def delete_f(path, target_col, remove_folder = False, show_err = False):
     try:
