@@ -3,6 +3,7 @@ import shutil
 import glob
 import time
 import json
+import json_generator_function
 import numpy as np
 import pandas as pd
 from multiprocessing import Pool
@@ -91,3 +92,63 @@ def run_by_gpu(json_files, gpu):
         device = load_param_json(json_setup_file)["MODEL_PARAMS"]["device"]
         if device == gpu:
             run_one_setup(json_setup_file)
+
+def raw_modify_param_dict(task_dict):
+    template = json_generator_function.gen_template()
+
+    template["MODEL_PARAMS"]["training_number"] = task_dict["Code"]
+    timeframe = task_dict["TimeFrame"].split("_")[1]
+    template["DATA_PARAMS"]["raw_data_file_name"] = "PRICE_LIQUIDASSET_{}_MIN.csv".format(timeframe)
+
+    template["DATA_PARAMS"]["CLEAN_METHOD_X"] = task_dict["clean_method_x"] #"breakout_only_x, prob_only_x"
+    template["DATA_PARAMS"]["BREAKOUT_WINDOW"] = task_dict["window"]
+    template["DATA_PARAMS"]["SEQ_LEN"] = task_dict["seq"]
+    template["DATA_PARAMS"]["FUTURE_PERIOD_PREDICT"] = task_dict["fut"]
+
+    template["DATA_PARAMS"]["TARGET_FUNCTION"] = task_dict["tf"] #"mod_sharpe, mod_prob", "cumulative_returns"
+    template["DATA_PARAMS"]["TARGET_THRESHOLD"] = task_dict["threshold"]
+
+    template["MODEL_PARAMS"]["device"] = task_dict["device"]
+    template["num_instances"] = task_dict["instance"]
+
+
+
+    template["MODEL_PARAMS"]["keras_model_function"] =  task_dict["model"]
+    template["MODEL_PARAMS"]["BATCH_SIZE"] = task_dict["batch"]
+    template["MODEL_PARAMS"]["EPOCHS"] = task_dict["epochs"]
+    template["MODEL_PARAMS"]["LEARNING_RATE"] = task_dict["LearningRate"]
+
+    template["MODEL_PARAMS"]["root_output_folder"] = task_dict["root_output_folder"]
+
+    return template
+
+
+def run_one_setup_2(p):
+    training_code = p["MODEL_PARAMS"]["training_number"]
+    DATA_PARAMS, MODEL_PARAMS, possible_assets, num_instances = parse_raw_param(p)
+    runs_params = [(DATA_PARAMS, MODEL_PARAMS, TARGET_TO_PREDICT) for TARGET_TO_PREDICT in possible_assets]
+
+    print("+++++++++++++++++++")
+    print("Doing:", MODEL_PARAMS["training_number"])
+    print("===================")
+
+    t0 = time.time()
+    pool = Pool(processes=num_instances)
+    run_status = pool.map(run_process, runs_params)
+    pool.close()
+    pool.join()
+
+    #completion_df
+    completion_df = pd.DataFrame(run_status, columns=["status","target","err", "completion_time"]).set_index("target")
+    completion_df.to_csv(os.path.join("json_setup", "CompletionSummary", training_code + ".csv"))
+
+    t1 = time.time()
+
+    print("===================")
+    print("Setup Done,", training_code, ". Time Elapsed:", (t1-t0)/3600, "hours.")
+    print("+++++++++++++++++++")
+
+def run_by_gpu_2(sub_task_df, gpu):
+    for task_dict in sub_task_df.to_dict(orient="rows"):
+        param_dict = raw_modify_param_dict(task_dict)
+        run_one_setup_2(param_dict)
