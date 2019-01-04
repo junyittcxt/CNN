@@ -37,7 +37,7 @@ def main(task_df, max_gpu):
 
 if __name__ == "__main__":
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    
+
     optparser = optparse.OptionParser()
     optparser.add_option("-s", "--sheetname", default="Z_5_DLTask", help="sheet")
     optparser.add_option("-g", "--maxgpu", default="2", help="max_gpu")
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('./Credential/DeepLearningAlphaC.txt', scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('./Credential/DeepLearningAlphaC-666170c72205.json', scope)
     gc = gspread.authorize(credentials)
     spreadsheet = gc.open("TASK")
 
