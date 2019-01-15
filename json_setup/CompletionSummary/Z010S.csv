@@ -1,0 +1,70 @@
+target,status,err,completion_time
+EURUSD,1,ok,2018-11-30 11:56:03
+EEM,1,ok: continue,2018-11-30 11:56:03
+EFA,1,ok: continue,2018-11-30 11:56:03
+EWZ,1,ok: continue,2018-11-30 11:56:03
+FXI,1,ok: continue,2018-11-30 11:56:03
+GDX,1,ok,2018-11-30 06:30:14
+HYG,1,ok: continue,2018-11-30 06:30:14
+IAU,1,ok: continue,2018-11-30 06:30:14
+IWM,1,ok: continue,2018-11-30 06:30:14
+SPY,1,ok: continue,2018-11-30 06:30:14
+USO,1,ok,2018-11-30 06:31:10
+VWO,1,ok: continue,2018-11-30 06:31:10
+XLE,1,ok: continue,2018-11-30 06:31:10
+XLF,1,ok: continue,2018-11-30 06:31:10
+XLI,1,ok: continue,2018-11-30 06:31:10
+XLK,1,ok,2018-11-30 06:30:43
+XLP,1,ok: continue,2018-11-30 06:30:43
+XLU,1,ok: continue,2018-11-30 06:30:43
+XOP,1,ok: continue,2018-11-30 06:30:43
+JNK,1,ok: continue,2018-11-30 06:30:43
+IYR,1,ok: continue,2018-11-30 06:30:14
+VEA,1,ok: continue,2018-11-30 06:30:14
+SLV,1,ok: continue,2018-11-30 06:30:14
+XLV,1,ok: continue,2018-11-30 06:30:14
+RSX,1,ok: continue,2018-11-30 06:30:14
+TLT,1,ok: continue,2018-11-30 06:30:14
+EWJ,1,ok: continue,2018-11-30 06:30:14
+OIH,1,ok: continue,2018-11-30 06:30:14
+GLD,1,ok: continue,2018-11-30 06:30:14
+EZU,1,ok: continue,2018-11-30 06:30:14
+KRE,1,ok: continue,2018-11-30 06:30:14
+SMH,1,ok: continue,2018-11-30 06:30:14
+XLB,1,ok: continue,2018-11-30 06:30:14
+XRT,1,ok: continue,2018-11-30 06:30:14
+LQD,1,ok: continue,2018-11-30 06:30:14
+EWT,1,ok: continue,2018-11-30 06:30:14
+XLY,1,ok: continue,2018-11-30 06:30:14
+VNQ,1,ok: continue,2018-11-30 06:30:14
+EWH,1,ok: continue,2018-11-30 06:30:14
+EWW,1,ok: continue,2018-11-30 06:30:14
+XBI,1,ok: continue,2018-11-30 06:30:14
+DIA,1,ok: continue,2018-11-30 06:30:14
+EWG,1,ok: continue,2018-11-30 06:30:14
+VGK,1,ok: continue,2018-11-30 06:30:14
+IEF,1,ok: continue,2018-11-30 06:30:14
+EMB,1,ok: continue,2018-11-30 06:30:14
+FEZ,1,ok: continue,2018-11-30 06:30:14
+AGG,1,ok: continue,2018-11-30 06:30:14
+UCO,1,ok: continue,2018-11-30 06:30:14
+EWY,1,ok: continue,2018-11-30 06:30:14
+ITB,1,ok: continue,2018-11-30 06:30:14
+XHB,1,ok: continue,2018-11-30 06:30:14
+TBT,1,ok: continue,2018-11-30 06:30:14
+DBC,1,ok: continue,2018-11-30 06:30:14
+IBB,1,ok,2018-11-30 11:21:17
+EWC,1,ok: continue,2018-11-30 06:30:43
+UNG,1,ok: continue,2018-11-30 06:30:43
+SHY,1,ok: continue,2018-11-30 06:30:43
+PFF,1,ok,2018-11-30 11:20:23
+USDJPY,1,ok,2018-11-30 20:48:28
+GBPUSD,1,ok,2018-11-30 16:22:46
+AUDUSD,1,ok,2018-12-01 00:04:29
+USDCHF,1,ok,2018-12-01 06:25:07
+USDCAD,1,ok,2018-12-01 12:47:57
+EURJPY,1,ok,2018-12-01 18:31:41
+EURGBP,1,ok,2018-11-30 20:46:44
+NZDUSD,1,ok,2018-12-01 03:08:30
+XAGUSD,1,ok,2018-12-01 09:39:45
+XAUUSD,1,ok,2018-12-01 16:09:04
