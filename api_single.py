@@ -133,6 +133,12 @@ if __name__ == "__main__":
     aa = predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection)
     print("pred:", aa)
 
+    print("testing2!")
+    query_date = "2014-11-26 12:00:00"
+    aa = predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection)
+    print("pred:", aa)
+
+
     app.run(host='0.0.0.0', port = port, debug=True, use_reloader=False)
 
     #Load scalers, model params, data params, and models
