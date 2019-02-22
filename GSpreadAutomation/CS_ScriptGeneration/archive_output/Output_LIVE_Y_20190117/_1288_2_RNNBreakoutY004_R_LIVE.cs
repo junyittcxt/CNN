@@ -28,7 +28,7 @@ using MySql.Data.MySqlClient;
 // This namespace holds all strategies and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public class LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE : Strategy
+	public class _1288_2_RNNBreakoutY004_R_LIVE : Strategy
 	{
         #region Variables
 		// General Variables
@@ -89,19 +89,18 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (State == State.SetDefaults)
 			{
 				Description				= "Deep Learning Rotation Strategy using signals from APIs (M30/15/5 Strategy Only. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
-				Name					= "LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE";
+				Name					= "_1288_2_RNNBreakoutY004_R_LIVE";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
+				IPAddress				= "192.168.1.136";
 				Port 					= "5005";
 
-				StrategyCode 			= "chg_strategycode";
-				RefInstrument			= "chg_refinstrument";
+				StrategyCode 			= "1288_2";
+				RefInstrument			= "AUDUSD";
 				BuySignalThreshold 		= 0.5;
 				SellSignalThreshold 	= 0.5;
-				ConsecutiveSignalBars   = chg_consecutive;
-				OrderType				= chg_order;
-				LiveMinuteLag 	= chg_liveminutelag;
+				ConsecutiveSignalBars   = 9;
+				OrderType				= 2;
 
 				// 2. SQL Related
 				SignalLag 				= 0;
@@ -149,7 +148,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				WriteOutput				= false;
 
 				// 7.1. Rotation / Basic
-				NumInstruments			= chg_numinstrument;
+				NumInstruments			= 1;
 				NumLongs				= 0;
 				NumShorts				= 0;
 				TradableStartIndex		= 1;
@@ -783,7 +782,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		{
 			double equal_weight = (double) 1/NumInstruments;
 			string url = "http://" + IPAddress + ":" + Port + "/multi";
-			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
+			string query_date = Times[0][0].ToString("u").Replace("Z", "");
 			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
 			JObject Result = GetJSONFromHTTP(url);
 
@@ -2253,11 +2252,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Range(0, 2), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "OrderType", GroupName = "1. Strategy Specific", Order = 8)]
 		public int OrderType
-		{ get; set; }
-
-		[Range(0, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "LiveMinuteLag", GroupName = "1. Strategy Specific", Order = 9)]
-		public int LiveMinuteLag
 		{ get; set; }
 
 

@@ -1,3 +1,5 @@
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import flask
 from flask import request
 import json
@@ -38,11 +40,13 @@ def predict():
         params = request.args
 
         query_date = str(params.get("date"))
-
+        db_variant = str(params.get("dbv"))
+        print("DB_VARIANT:", db_variant)
+        
         return_dict = dict()
         #PREDICTIONS
         t0 = time.time()
-        last_date, y_pred, error_code, error_message = predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection = connection)
+        last_date, y_pred, error_code, error_message = predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection = connection, db_variant = db_variant)
         t1 = time.time()
         return_dict["last_date"] = last_date.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -100,9 +104,24 @@ if __name__ == "__main__":
 
     #Load strategy_meta
     try:
-        json_path = os.path.join("STRATEGY_META", "{}.json".format(strat))
-        output_file = open(json_path).read()
-        strategy_meta = json.loads(output_file)
+        #Get Strategy Meta from Google Sheet instead of json
+        scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('/media/workstation/Storage/GoogleProject/DeepLearningAlphaC.txt', scope)
+        gc = gspread.authorize(credentials)
+        spreadsheet = gc.open("TASK")
+        worksheet_list = spreadsheet.worksheets()
+        Accepted = spreadsheet.worksheet("Accepted").get_all_records()
+        adf = pd.DataFrame(Accepted)
+        adf = adf.astype("str")
+
+        #Select a strat, and get strategy_meta from TASK.Accepted sheet
+        strategy_meta = adf.loc[adf.Strategy == strat].to_dict(orient = "records")[0]
+
+        # json_path = os.path.join("STRATEGY_META", "{}.json".format(strat))
+        # output_file = open(json_path).read()
+        # strategy_meta = json.loads(output_file)
         print("Doing Strategy: {}, Key: {}, Port: {}".format(strat, key, port))
     except Exception as err:
         print("Error at:", "Load strategy_meta")

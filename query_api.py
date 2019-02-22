@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import glob
 import os
 import re
@@ -24,7 +26,10 @@ def gen_connection():
 
 def query_mysql(connection, dt, table, window):
     with connection.cursor() as cursor:
-        sql = "select * from {tb} where Date <= '{dd}' order by Date desc limit {w};".format(tb = table, dd = dt, w = window)
+        if window is None:
+            sql = "select * from {tb} where Date <= '{dd}' order by Date;".format(tb = table, dd = dt)
+        else:
+            sql = "select * from {tb} where Date <= '{dd}' order by Date desc limit {w};".format(tb = table, dd = dt, w = window)
         cursor.execute(sql)
         result = cursor.fetchall()
         data_df = pd.DataFrame(result, columns = result[0].keys())
@@ -56,7 +61,7 @@ def get_path_dict(strategy_meta):
             data_params_path = glob.glob(os.path.join(target_path, "DATA_PARAMS.pkl"))[0]
             model_path = glob.glob(os.path.join(target_path, "*.model"))[0]
             PATH_DICT["b"][target] = [scaler_path, data_params_path, model_params_path, model_path]
-
+            
     if not asset_s[0] == "":
         for target in asset_s:
             d_dir = s_dir
@@ -109,9 +114,19 @@ def load_items(PATH_DICT):
 
     return ALL_SCALERS, ALL_DATA_PARAMS, ALL_MODEL_PARAMS, ALL_MODELS
 
+#load only one
+def load_item_one(PATH_DICT, order, asset):
+    path_list = PATH_DICT[order][asset]
+    scaler = joblib.load(path_list[0])
+    DATA_PARAMS = joblib.load(path_list[1])
+    MODEL_PARAMS = joblib.load(path_list[2])
+    model = keras.models.load_model(path_list[3], custom_objects=None, compile=False)
+    return scaler, DATA_PARAMS, MODEL_PARAMS, model
 
 
-def predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection = None):
+
+
+def predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connection = None, db_variant = None):
     if connection is None:
         connection = gen_connection()
 
@@ -128,7 +143,10 @@ def predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connect
 
     #get mysql table name using raw_data_file
     timeframe = int(raw_data_file.split("_")[2])
-    data_table = "db_{t}_min".format(t = str(timeframe))
+    if db_variant is None:
+        data_table = "db_{t}_min".format(t = str(timeframe))
+    else:
+        data_table = "db_{t}_min_{v}".format(t = str(timeframe), v = str(db_variant))
     print("data_table:", data_table)
 
     #Load accepted index

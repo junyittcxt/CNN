@@ -28,7 +28,7 @@ using MySql.Data.MySqlClient;
 // This namespace holds all strategies and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public class LIVETemplate_DeepLearning_Rotation_M60_R_LIVE : Strategy
+	public class LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE : Strategy
 	{
         #region Variables
 		// General Variables
@@ -79,7 +79,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private List<List<double>> LongSignal;
 		private List<List<double>> ShortSignal;
 
-
 		// Indicators
 		#endregion
 
@@ -89,24 +88,24 @@ namespace NinjaTrader.NinjaScript.Strategies
 			#region Default Parameters
 			if (State == State.SetDefaults)
 			{
-				Description				= "Deep Learning Rotation Strategy using signals from APIs tables (M60 Strategy Only. TimeFrame Value must be set to 30. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
-				Name					= "LIVETemplate_DeepLearning_Rotation_M60_R_LIVE";
+				Description				= "Deep Learning Rotation Strategy using signals from APIs (M30/15/5 Strategy Only. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
+				Name					= "LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
+				IPAddress				= "192.168.1.136";
 				Port 					= "5005";
 
 				StrategyCode 			= "chg_strategycode";
 				RefInstrument			= "chg_refinstrument";
-
 				BuySignalThreshold 		= 0.5;
 				SellSignalThreshold 	= 0.5;
 				ConsecutiveSignalBars   = chg_consecutive;
 				OrderType				= chg_order;
-				LiveMinuteLag 	= chg_liveminutelag;
 
 				// 2. SQL Related
-				SignalLag				= 0;
+				SignalLag 				= 0;
+
+//				 2. Optimizable
 
 				// 3. Capital
 				AllocationMethod		= 3;
@@ -204,11 +203,11 @@ namespace NinjaTrader.NinjaScript.Strategies
 			else if (State == State.Configure)
 			{
 				// Secondary data series go here.
-				 string[] Refs = RefInstrument.Split(',');
-				 foreach(string o in Refs)
-				 {
-					 AddDataSeries(o.Trim(), BarsPeriods[0].BarsPeriodType, BarsPeriods[0].Value);
-				 }
+				string[] Refs = RefInstrument.Split(',');
+				foreach(string o in Refs)
+				{
+					AddDataSeries(o.Trim(), BarsPeriods[0].BarsPeriodType, BarsPeriods[0].Value);
+				}
 
 				// Initialize indicators.
 
@@ -316,7 +315,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 				#region Logging Setup
 				if (Account.Name == "Backtest")
 				{
+
 					string Name2 = StrategyCode + "_" + ConsecutiveSignalBars + "_" + OrderType;
+
 
 					Reports.FolderPath 	= LogDirectoryPath + @"Backtest\" + Name2 + @"\";
 
@@ -450,7 +451,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 				// Perform session setup.
 				SessionSetup(SessionInfo, States);
 				ThisSession 	= new SessionIterator(BarsArray[0]);
-
 				PrintSessionClose();
 			}
 			#endregion
@@ -543,12 +543,11 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (RotationDataChecks(TradedList, 10))
 				return;
 
-			if (Times[0][0].Minute != 0)
-				return;
+//			if (Times[0][0].Minute != 0)
+//				return;
 
 			// Runs methods at the start of day or when the first bar is evaluated.
-//			if ((IsFirstTickOfBar && ToTime(Times[0][0]) == 180000) ||
-			if ((IsFirstTickOfBar) ||
+			if ((IsFirstTickOfBar && Bars.IsFirstBarOfSession) ||
 				IsBarTypeDWM() ||
 				!States.StrategySetupDone)
 				SessionOpen();
@@ -602,12 +601,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 
 			// Runs methods at the end of day.
-//			if ((IsFirstTickOfBar && ToTime(Times[0][0]) == 180000 && Times[0][0] >= ThisClose) ||
 			if ((IsFirstTickOfBar && Times[0][0] >= ThisClose) ||
 				IsBarTypeDWM())
-			{
 				SessionClose();
-			}
 		}
 		#endregion
 		// Core functionality. Updates P&L, sessions, trade halts and filters.
@@ -638,7 +634,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 			//
 			//
 			//-----------
-
 			LongSignal = new List<List<double>>();
 			ShortSignal = new List<List<double>>();
 			foreach (InstrumentClass o in TradedList)
@@ -666,9 +661,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (!States.OnTheCloseDone &&
 				Times[0][0] > ThisClose &&
 				ThisClose != DateTime.MinValue)
-			{
 				SessionClose();
-			}
 
 			// Calculates session's open and close.
 			ThisSession.GetNextSession(Times[0][0], true);
@@ -700,7 +693,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		#region SessionClose
 		private void SessionClose()
 		{
-
 			DoPrint("*CLOSE*" + " / " + ThisClose.ToString() + " ===== "  + Times[0][0]);
 			States.OnTheCloseDone	= true;
 
@@ -789,12 +781,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private void UpdateScores()
 		{
 			double equal_weight = (double) 1/NumInstruments;
-
 			string url = "http://" + IPAddress + ":" + Port + "/multi";
-			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
+			string query_date = Times[0][0].ToString("u").Replace("Z", "");
 			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
 			JObject Result = GetJSONFromHTTP(url);
-
 
 			foreach (InstrumentClass o in TradedList)
 			{
@@ -876,6 +866,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 //						DoPrint(LongSignal[o.Index-1][0]);
 //						DoPrint(LongSignal[o.Index-1][1]);
 					}
+
+
 //					// Debug
 //					DoPrint("SYMBOL: " + o.Symbol + "-- cp:" + o.CurrentPosition);
 //					DoPrint("Times: " + Times[0][0].ToLongDateString());
@@ -2262,10 +2254,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		public int OrderType
 		{ get; set; }
 
-		[Range(0, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "LiveMinuteLag", GroupName = "1. Strategy Specific", Order = 9)]
-		public int LiveMinuteLag
-		{ get; set; }
 
 	// --------------------
 

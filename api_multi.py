@@ -1,3 +1,8 @@
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import optparse
+from query_api import *
+
 import time
 import numpy as np
 import requests
@@ -34,8 +39,38 @@ def get(port, payload, return_dict):
         port = str(port)
         return_dict[port] = dict(error_code = "-2", error_message = str(err), y = "0")
 
+def get_ports(strat):
+    try:
+        #Get Strategy Meta from Google Sheet instead of json
+        scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
 
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('/media/workstation/Storage/GoogleProject/DeepLearningAlphaC.txt', scope)
+        gc = gspread.authorize(credentials)
+        spreadsheet = gc.open("TASK")
+        worksheet_list = spreadsheet.worksheets()
+        Accepted = spreadsheet.worksheet("Accepted").get_all_records()
+        adf = pd.DataFrame(Accepted)
+        adf = adf.astype("str")
 
+        #Select a strat, and get strategy_meta from TASK.Accepted sheet
+        strategy_meta = adf.loc[adf.Strategy == strat].to_dict(orient = "records")[0]
+        print("Load Strategy Meta: {}, Code: {}, Asset_B: {}, Asset_S: {}".format(strategy_meta["Strategy"],strategy_meta["Code"],strategy_meta["Asset_B"],strategy_meta["Asset_S"]))
+    except Exception as err:
+        print("Error at:", "Load strategy_meta")
+        print(err)
+
+    PATH_DICT = get_path_dict(strategy_meta)
+    all_keys = []
+    for k1, v1 in PATH_DICT.items():
+        for k2,v2 in v1.items():
+            all_keys.append("{}_{}".format(k1, k2))
+
+    portstart = int(strategy_meta["port_start"])
+    strats = [strat]*len(all_keys)
+    keys = all_keys
+    ports = np.arange(len(all_keys)) + portstart
+    return ports
 
 
 
@@ -57,14 +92,17 @@ def multi():
     query_date = str(params.get("date"))
     strat = str(params.get("strat"))
 
-    key_port_df = load_strat_key_port(strat)
+    # key_port_df = load_strat_key_port(strat)
+    # ports = key_port_df["port"]
+
+    ports = get_ports(strat)
 
     t0 = time.time()
     jobs = []
     manager = mp.Manager()
     return_dict = manager.dict()
-    payload = {'date': query_date}
-    for port in key_port_df["port"]:
+    payload = {'date': query_date, "dbv":"2"}
+    for port in ports:
         p = mp.Process(target=get, args=(port, payload, return_dict))
         jobs.append(p)
         p.start()

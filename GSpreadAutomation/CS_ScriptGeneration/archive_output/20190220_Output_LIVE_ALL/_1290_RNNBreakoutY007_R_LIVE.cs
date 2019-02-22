@@ -28,7 +28,7 @@ using MySql.Data.MySqlClient;
 // This namespace holds all strategies and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public class LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE : Strategy
+	public class _1290_RNNBreakoutY007_R_LIVE : Strategy
 	{
         #region Variables
 		// General Variables
@@ -89,19 +89,19 @@ namespace NinjaTrader.NinjaScript.Strategies
 			if (State == State.SetDefaults)
 			{
 				Description				= "Deep Learning Rotation Strategy using signals from APIs (M30/15/5 Strategy Only. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
-				Name					= "LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE";
+				Name					= "_1290_RNNBreakoutY007_R_LIVE";
 
 				// 1. Strategy Specific
 				IPAddress				= "192.168.1.161";
 				Port 					= "5005";
 
-				StrategyCode 			= "chg_strategycode";
-				RefInstrument			= "chg_refinstrument";
+				StrategyCode 			= "1290";
+				RefInstrument			= "LQD,USDJPY";
 				BuySignalThreshold 		= 0.5;
 				SellSignalThreshold 	= 0.5;
-				ConsecutiveSignalBars   = chg_consecutive;
-				OrderType				= chg_order;
-				LiveMinuteLag 	= chg_liveminutelag;
+				ConsecutiveSignalBars   = 8;
+				OrderType				= 0;
+				LiveMinuteLag 	= 15;
 
 				// 2. SQL Related
 				SignalLag 				= 0;
@@ -149,7 +149,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				WriteOutput				= false;
 
 				// 7.1. Rotation / Basic
-				NumInstruments			= chg_numinstrument;
+				NumInstruments			= 2;
 				NumLongs				= 0;
 				NumShorts				= 0;
 				TradableStartIndex		= 1;

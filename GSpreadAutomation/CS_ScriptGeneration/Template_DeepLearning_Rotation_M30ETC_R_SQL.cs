@@ -105,7 +105,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				OrderType				= change_OrderType;
 
 				// 2. SQL Related
-				SignalLag 				= 0;
+				SignalLag 				= 1;
 
 //				 2. Optimizable
 

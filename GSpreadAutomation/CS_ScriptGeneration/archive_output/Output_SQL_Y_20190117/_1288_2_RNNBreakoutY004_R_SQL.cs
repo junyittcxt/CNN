@@ -28,7 +28,7 @@ using MySql.Data.MySqlClient;
 // This namespace holds all strategies and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Strategies
 {
-	public class LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE : Strategy
+	public class _1288_2_RNNBreakoutY004_R_SQL : Strategy
 	{
         #region Variables
 		// General Variables
@@ -76,6 +76,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private Dictionary<string, double> long_signal_value;
 		private Dictionary<string, double> short_signal_value;
 
+		private MLDictionary ShortData;
+		private MLDictionary LongData;
+
 		private List<List<double>> LongSignal;
 		private List<List<double>> ShortSignal;
 
@@ -88,20 +91,18 @@ namespace NinjaTrader.NinjaScript.Strategies
 			#region Default Parameters
 			if (State == State.SetDefaults)
 			{
-				Description				= "Deep Learning Rotation Strategy using signals from APIs (M30/15/5 Strategy Only. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
-				Name					= "LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE";
+				Description				= "Deep Learning Rotation Strategy using signals from MySQL tables (M30/15/5 Strategy Only. Main Instrument set to FX, either EURUSD or GBPUSD if not used in RefInstrument)";
+				Name					= "_1288_2_RNNBreakoutY004_R_SQL";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
-				Port 					= "5005";
+				RefInstrument			= "AUDUSD";
 
-				StrategyCode 			= "chg_strategycode";
-				RefInstrument			= "chg_refinstrument";
+				dbTableLong				= "y004b";
+				dbTableShort			= "y004s";
 				BuySignalThreshold 		= 0.5;
 				SellSignalThreshold 	= 0.5;
-				ConsecutiveSignalBars   = chg_consecutive;
-				OrderType				= chg_order;
-				LiveMinuteLag 	= chg_liveminutelag;
+				ConsecutiveSignalBars   = 9;
+				OrderType				= 2;
 
 				// 2. SQL Related
 				SignalLag 				= 0;
@@ -149,7 +150,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				WriteOutput				= false;
 
 				// 7.1. Rotation / Basic
-				NumInstruments			= chg_numinstrument;
+				NumInstruments			= RefInstrument.Split(',').Length;
 				NumLongs				= 0;
 				NumShorts				= 0;
 				TradableStartIndex		= 1;
@@ -316,11 +317,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				#region Logging Setup
 				if (Account.Name == "Backtest")
 				{
-
-					string Name2 = StrategyCode + "_" + ConsecutiveSignalBars + "_" + OrderType;
-
-
-					Reports.FolderPath 	= LogDirectoryPath + @"Backtest\" + Name2 + @"\";
+					Reports.FolderPath 	= LogDirectoryPath + @"Backtest\" + Name + @"\";
 
 					if (Reports.BacktestSummary)
 					{
@@ -452,6 +449,20 @@ namespace NinjaTrader.NinjaScript.Strategies
 				// Perform session setup.
 				SessionSetup(SessionInfo, States);
 				ThisSession 	= new SessionIterator(BarsArray[0]);
+
+				//Load SQL
+//				Print(RefInstrument.Split(','));
+				Print("Loading MySQL Tables to Custom MLDictionary");
+				List<string> AssetNames = new List<string>();
+
+				foreach (InstrumentClass o in TradedList)
+				{
+					AssetNames.Add(o.Symbol);
+				}
+				LongData = new MLDictionary(dbTableLong, AssetNames.ToArray());
+				ShortData = new MLDictionary(dbTableShort, AssetNames.ToArray());
+				Print("Successfully Loaded MySQL Tables to Custom MLDictionary");
+
 				PrintSessionClose();
 			}
 			#endregion
@@ -538,10 +549,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 			// Modify this if additional conditions (e.g. more CurrentBars or different BarsPeriodType) are required.
 			if (BarsInProgress != 0 ||
 				BarsPeriod.BarsPeriodType != BarsPeriodType.Minute ||
-				CurrentBars[0] < 10)
+				CurrentBars[0] < 2)
 				return;
 
-			if (RotationDataChecks(TradedList, 10))
+			if (RotationDataChecks(TradedList, 2))
 				return;
 
 //			if (Times[0][0].Minute != 0)
@@ -694,7 +705,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		#region SessionClose
 		private void SessionClose()
 		{
-			DoPrint("*CLOSE*" + " / " + ThisClose.ToString() + " ===== "  + Times[0][0]);
+			DoPrint("*CLOSE*" + " / " + ThisClose.ToString());
 			States.OnTheCloseDone	= true;
 
 			// Strategy specific calculations.
@@ -782,10 +793,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private void UpdateScores()
 		{
 			double equal_weight = (double) 1/NumInstruments;
-			string url = "http://" + IPAddress + ":" + Port + "/multi";
-			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
-			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
-			JObject Result = GetJSONFromHTTP(url);
 
 			foreach (InstrumentClass o in TradedList)
 			{
@@ -795,42 +802,34 @@ namespace NinjaTrader.NinjaScript.Strategies
 					if(OrderType == 0)
 					{
 						// Query both long and short signal
-						long_signal_value[o.Symbol] = Convert.ToDouble(Result["b_" + o.Symbol]["y"]);
-						short_signal_value[o.Symbol] = Convert.ToDouble(Result["s_" + o.Symbol]["y"]);
+						long_signal_value[o.Symbol] = LongData.GetData(o.Symbol, Times[o.Index][0]);
+						short_signal_value[o.Symbol] = ShortData.GetData(o.Symbol, Times[o.Index][0]);
 					} else if(OrderType == 1){
 						// Query long signal only
-						long_signal_value[o.Symbol] = Convert.ToDouble(Result["b_" + o.Symbol]["y"]);
+						long_signal_value[o.Symbol] = LongData.GetData(o.Symbol, Times[o.Index][0]);
 						short_signal_value[o.Symbol] = 0;
 					}else if(OrderType == 2){
 						// Query short signal only
 						long_signal_value[o.Symbol] = 0;
-						short_signal_value[o.Symbol] = Convert.ToDouble(Result["s_" + o.Symbol]["y"]);
+						short_signal_value[o.Symbol] = ShortData.GetData(o.Symbol, Times[o.Index][0]);
 					}
 
-					int index;
-					if(RefInstrument == "")
-					{
-						index = o.Index;
-					}else{
-						index = o.Index - 1;
-					}
-
-					LongSignal[index].Insert(0, long_signal_value[o.Symbol]);
-					ShortSignal[index].Insert(0, short_signal_value[o.Symbol]);
+					LongSignal[o.Index-1].Insert(0, long_signal_value[o.Symbol]);
+					ShortSignal[o.Index-1].Insert(0, short_signal_value[o.Symbol]);
 
 					long_fade_count[o.Symbol] = long_fade_count[o.Symbol] - 1;
 					short_fade_count[o.Symbol] = short_fade_count[o.Symbol] - 1;
 
 					// Possible Transactions
-					if(ShortSignal[index].Count > SignalLag &&
-						LongSignal[index].Count > SignalLag)
+					if(ShortSignal[o.Index-1].Count > SignalLag &&
+						LongSignal[o.Index-1].Count > SignalLag)
 					{
-						if(LongSignal[index][SignalLag] >= BuySignalThreshold)
+						if(LongSignal[o.Index-1][SignalLag] >= BuySignalThreshold)
 						{
 							long_fade_count[o.Symbol] = ConsecutiveSignalBars;
 						}
 
-						if(ShortSignal[index][SignalLag] >= SellSignalThreshold)
+						if(ShortSignal[o.Index-1][SignalLag] >= SellSignalThreshold)
 						{
 							short_fade_count[o.Symbol] = ConsecutiveSignalBars;
 						}
@@ -2219,20 +2218,16 @@ namespace NinjaTrader.NinjaScript.Strategies
 		#region Properties
 
 		[NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "IPAddress", GroupName = "1. Strategy Specific", Order = 0)]
-		public string IPAddress
-		{ get; set; }
-
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Port", GroupName = "1. Strategy Specific", Order = 1)]
-		public string Port
-		{ get; set; }
-
-		[Display(ResourceType = typeof(Custom.Resource), Name = "StrategyCode", GroupName = "1. Strategy Specific", Order = 2)]
-		public string StrategyCode
-		{ get; set; }
-
-		[Display(ResourceType = typeof(Custom.Resource), Name = "RefInstrument", GroupName = "1. Strategy Specific", Order = 10)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "RefInstrument", GroupName = "1. Strategy Specific", Order = 0)]
 		public string RefInstrument
+		{ get; set; }
+
+		[Display(ResourceType = typeof(Custom.Resource), Name = "dbTableLong", GroupName = "1. Strategy Specific", Order = 1)]
+		public string dbTableLong
+		{ get; set; }
+
+		[Display(ResourceType = typeof(Custom.Resource), Name = "dbTableShort", GroupName = "1. Strategy Specific", Order = 2)]
+		public string dbTableShort
 		{ get; set; }
 
 		[Range(0, 1.1), NinjaScriptProperty]
@@ -2253,11 +2248,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Range(0, 2), NinjaScriptProperty]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "OrderType", GroupName = "1. Strategy Specific", Order = 8)]
 		public int OrderType
-		{ get; set; }
-
-		[Range(0, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "LiveMinuteLag", GroupName = "1. Strategy Specific", Order = 9)]
-		public int LiveMinuteLag
 		{ get; set; }
 
 

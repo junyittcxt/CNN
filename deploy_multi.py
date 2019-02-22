@@ -1,3 +1,6 @@
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
 import os
 import optparse
 import time
@@ -14,9 +17,23 @@ def run_api(strat, key, port, gpu, py = "api_single.py"):
 
 def main(strat, portstart, gpu, skip = 0, max = None):
     try:
-        json_path = os.path.join("STRATEGY_META", "{}.json".format(strat))
-        output_file = open(json_path).read()
-        strategy_meta = json.loads(output_file)
+        #Get Strategy Meta from Google Sheet instead of json
+        scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('/media/workstation/Storage/GoogleProject/DeepLearningAlphaC.txt', scope)
+        gc = gspread.authorize(credentials)
+        spreadsheet = gc.open("TASK")
+        worksheet_list = spreadsheet.worksheets()
+        Accepted = spreadsheet.worksheet("Accepted").get_all_records()
+        adf = pd.DataFrame(Accepted)
+        adf = adf.astype("str")
+
+        #Select a strat, and get strategy_meta from TASK.Accepted sheet
+        strategy_meta = adf.loc[adf.Strategy == strat].to_dict(orient = "records")[0]
+        # json_path = os.path.join("STRATEGY_META", "{}.json".format(strat))
+        # output_file = open(json_path).read()
+        # strategy_meta = json.loads(output_file)
         print("Doing Strategy: {}, Code: {}, Asset_B: {}, Asset_S: {}".format(strategy_meta["Strategy"],strategy_meta["Code"],strategy_meta["Asset_B"],strategy_meta["Asset_S"]))
     except Exception as err:
         print("Error at:", "Load strategy_meta")
@@ -53,8 +70,8 @@ def main(strat, portstart, gpu, skip = 0, max = None):
     #Write keys and ports
     print("keys:", keys)
     print("ports:", ports[0], "to", ports[-1])
-    key_df = pd.DataFrame(dict(key = keys, port = ports))
-    key_df.to_csv(os.path.join("STRATEGY_KEYS_PORTS", "{}_{}_{}.csv".format(strat, ports[0], ports[-1])))
+    # key_df = pd.DataFrame(dict(key = keys, port = ports))
+    # key_df.to_csv(os.path.join("STRATEGY_KEYS_PORTS", "{}_{}_{}.csv".format(strat, ports[0], ports[-1])))
     print("===================")
 
     for proc in jobs:

@@ -93,7 +93,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Name					= "LIVETemplate_DeepLearning_Rotation_M60_R_LIVE";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
+				IPAddress				= "192.168.1.136";
 				Port 					= "5005";
 
 				StrategyCode 			= "chg_strategycode";
@@ -103,7 +103,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 				SellSignalThreshold 	= 0.5;
 				ConsecutiveSignalBars   = chg_consecutive;
 				OrderType				= chg_order;
-				LiveMinuteLag 	= chg_liveminutelag;
 
 				// 2. SQL Related
 				SignalLag				= 0;
@@ -791,7 +790,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			double equal_weight = (double) 1/NumInstruments;
 
 			string url = "http://" + IPAddress + ":" + Port + "/multi";
-			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
+			string query_date = Times[0][0].ToString("u").Replace("Z", "");
 			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
 			JObject Result = GetJSONFromHTTP(url);
 
@@ -2262,10 +2261,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		public int OrderType
 		{ get; set; }
 
-		[Range(0, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "LiveMinuteLag", GroupName = "1. Strategy Specific", Order = 9)]
-		public int LiveMinuteLag
-		{ get; set; }
 
 	// --------------------
 
