@@ -49,7 +49,7 @@ def get_path_dict(strategy_meta):
     PATH_DICT["b"] = dict()
     PATH_DICT["s"] = dict()
 
-    if not asset_b[0] == "":
+    if not asset_b[0] == "-":
         for target in asset_b:
             d_dir = b_dir
             AM_path = os.path.join(main_dir, d_dir, "ASSETS_MODELS")
@@ -62,7 +62,7 @@ def get_path_dict(strategy_meta):
             model_path = glob.glob(os.path.join(target_path, "*.model"))[0]
             PATH_DICT["b"][target] = [scaler_path, data_params_path, model_params_path, model_path]
             
-    if not asset_s[0] == "":
+    if not asset_s[0] == "-":
         for target in asset_s:
             d_dir = s_dir
             AM_path = os.path.join(main_dir, d_dir, "ASSETS_MODELS")
