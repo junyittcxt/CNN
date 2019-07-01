@@ -92,8 +92,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Name					= "LIVETemplate_DeepLearning_Rotation_M30ETC_R_LIVE";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
+				IPAddress				= "192.168.1.235";
 				Port 					= "5005";
+				DBVariant			= "3";
 
 				StrategyCode 			= "chg_strategycode";
 				RefInstrument			= "chg_refinstrument";
@@ -784,7 +785,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			double equal_weight = (double) 1/NumInstruments;
 			string url = "http://" + IPAddress + ":" + Port + "/multi";
 			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
-			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
+			url = url + "?date=" + query_date + "&strat=" + StrategyCode + "&dbv=" + DBVariant;
 			JObject Result = GetJSONFromHTTP(url);
 
 			foreach (InstrumentClass o in TradedList)
@@ -2225,6 +2226,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Port", GroupName = "1. Strategy Specific", Order = 1)]
 		public string Port
+		{ get; set; }
+
+		[Display(ResourceType = typeof(Custom.Resource), Name = "DBVariant", GroupName = "1. Strategy Specific", Order = 1)]
+		public string DBVariant
 		{ get; set; }
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "StrategyCode", GroupName = "1. Strategy Specific", Order = 2)]

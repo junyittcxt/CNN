@@ -93,8 +93,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Name					= "LIVETemplate_DeepLearning_Rotation_M60_R_LIVE";
 
 				// 1. Strategy Specific
-				IPAddress				= "192.168.1.161";
+				IPAddress				= "192.168.1.235";
 				Port 					= "5005";
+				DBVariant			= "3";
 
 				StrategyCode 			= "chg_strategycode";
 				RefInstrument			= "chg_refinstrument";
@@ -792,7 +793,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 			string url = "http://" + IPAddress + ":" + Port + "/multi";
 			string query_date = Times[0][0].AddMinutes(-1*LiveMinuteLag).ToString("u").Replace("Z", "");
-			url = url + "?date=" + query_date + "&strat=" + StrategyCode;
+			url = url + "?date=" + query_date + "&strat=" + StrategyCode + "&dbv=" + DBVariant;
 			JObject Result = GetJSONFromHTTP(url);
 
 
@@ -2234,26 +2235,30 @@ namespace NinjaTrader.NinjaScript.Strategies
 		public string Port
 		{ get; set; }
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "StrategyCode", GroupName = "1. Strategy Specific", Order = 2)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "DBVariant", GroupName = "1. Strategy Specific", Order = 2)]
+		public string DBVariant
+		{ get; set; }
+
+		[Display(ResourceType = typeof(Custom.Resource), Name = "StrategyCode", GroupName = "1. Strategy Specific", Order = 3)]
 		public string StrategyCode
 		{ get; set; }
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "RefInstrument", GroupName = "1. Strategy Specific", Order = 10)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "RefInstrument", GroupName = "1. Strategy Specific", Order = 4)]
 		public string RefInstrument
 		{ get; set; }
 
 		[Range(0, 1.1), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "BuySignalThreshold", GroupName = "1. Strategy Specific", Order = 3)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "BuySignalThreshold", GroupName = "1. Strategy Specific", Order = 5)]
 		public double BuySignalThreshold
 		{ get; set; }
 
 		[Range(0, 1.1), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "SellSignalThreshold", GroupName = "1. Strategy Specific", Order = 4)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "SellSignalThreshold", GroupName = "1. Strategy Specific", Order = 6)]
 		public double SellSignalThreshold
 		{ get; set; }
 
 		[Range(0, int.MaxValue), NinjaScriptProperty]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "ConsecutiveSignalBars", GroupName = "1. Strategy Specific", Order = 5)]
+		[Display(ResourceType = typeof(Custom.Resource), Name = "ConsecutiveSignalBars", GroupName = "1. Strategy Specific", Order = 7)]
 		public int ConsecutiveSignalBars
 		{ get; set; }
 
