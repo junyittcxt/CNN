@@ -91,6 +91,7 @@ def multi():
     params = request.args
     query_date = str(params.get("date"))
     strat = str(params.get("strat"))
+    dbv = str(params.get("dbv"))
 
     # key_port_df = load_strat_key_port(strat)
     # ports = key_port_df["port"]
@@ -101,7 +102,7 @@ def multi():
     jobs = []
     manager = mp.Manager()
     return_dict = manager.dict()
-    payload = {'date': query_date, "dbv":"2"}
+    payload = {'date': query_date, "dbv": dbv}
     for port in ports:
         p = mp.Process(target=get, args=(port, payload, return_dict))
         jobs.append(p)

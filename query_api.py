@@ -24,18 +24,22 @@ def gen_connection():
                                  cursorclass=pymysql.cursors.DictCursor)
     return connection
 
-def query_mysql(connection, dt, table, window):
-    with connection.cursor() as cursor:
-        if window is None:
-            sql = "select * from {tb} where Date <= '{dd}' order by Date;".format(tb = table, dd = dt)
-        else:
-            sql = "select * from {tb} where Date <= '{dd}' order by Date desc limit {w};".format(tb = table, dd = dt, w = window)
-        cursor.execute(sql)
-        result = cursor.fetchall()
-        data_df = pd.DataFrame(result, columns = result[0].keys())
-        data_df["Date"] = pd.to_datetime(data_df["Date"])
-        data_df = data_df.sort_values("Date").set_index("Date")
-    return data_df
+def query_mysql(connection, dt, table, window = None):
+    try: 
+        with connection.cursor() as cursor:
+            if window is None:
+                sql = "select * from {tb} where Date <= '{dd}' order by Date;".format(tb = table, dd = dt)
+            else:
+                sql = "select * from {tb} where Date <= '{dd}' order by Date desc limit {w};".format(tb = table, dd = dt, w = window)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            data_df = pd.DataFrame(result, columns = result[0].keys())
+            data_df["Date"] = pd.to_datetime(data_df["Date"])
+            data_df = data_df.sort_values("Date").set_index("Date")
+        return data_df
+    except Exception as err:
+        print(err)
+        return pd.DataFrame()
 
 
 def get_path_dict(strategy_meta):
@@ -61,7 +65,7 @@ def get_path_dict(strategy_meta):
             data_params_path = glob.glob(os.path.join(target_path, "DATA_PARAMS.pkl"))[0]
             model_path = glob.glob(os.path.join(target_path, "*.model"))[0]
             PATH_DICT["b"][target] = [scaler_path, data_params_path, model_params_path, model_path]
-            
+
     if not asset_s[0] == "-":
         for target in asset_s:
             d_dir = s_dir
@@ -77,7 +81,7 @@ def get_path_dict(strategy_meta):
 
     return PATH_DICT
 
-def load_item_by_key(PATH_DICT, key):
+def load_item_by_key(PATH_DICT, key, exclude_model = False):
     try:
         direction_key = key.split("_")[0]
         asset_key = key.split("_")[1]
@@ -86,7 +90,10 @@ def load_item_by_key(PATH_DICT, key):
         scaler = joblib.load(val2[0])
         DATA_PARAMS = joblib.load(val2[1])
         MODEL_PARAMS = joblib.load(val2[2])
-        model =  keras.models.load_model(val2[3], custom_objects=None, compile=False)
+        if exclude_model:
+            model = None
+        else:   
+            model =  keras.models.load_model(val2[3], custom_objects=None, compile=False)
         return scaler, DATA_PARAMS, MODEL_PARAMS, model
 
     except Exception as err2:
@@ -163,6 +170,7 @@ def predict_signal(query_date, scaler, DATA_PARAMS, MODEL_PARAMS, model, connect
         query_df = query_mysql(connection, dt = query_date, table = data_table, window = (BREAKOUT_WINDOW+SEQ_LEN)*factor)[6:]
 
         df = clean_data_x(query_df, TARGET_TO_PREDICT, BREAKOUT_WINDOW, CLEAN_METHOD_X, accepted_index)
+        print(df.tail())
         df.dropna(inplace = True)
 
         nrows = df.shape[0]
