@@ -26,6 +26,7 @@ def write_signal(query_date, db_variant, PATH_DICT, key, strategy_meta, db = Non
     signal = get_signal(query_date, db_variant, PATH_DICT, key)
     signal["code"] = strategy_meta["Code"]
     signal["key"] = key
+    signal["write_time"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     db[collection_name].insert(signal)
 
 def get_signal(query_date, db_variant, PATH_DICT, key):
