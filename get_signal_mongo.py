@@ -34,7 +34,7 @@ def timer(func):
         return out
     return inner
 
-@timer
+# @timer
 def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, output_db = "MLProduction", output_collection_name = "FirstDL", price_db = "Production", price_coll = "prices"):
     db = get_portfolio_db(output_db)
     signal = get_signal_mongo(query_date, PATH_DICT, key, price_db, price_coll)
