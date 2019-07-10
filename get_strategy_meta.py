@@ -14,9 +14,9 @@ def get_all_strategy_meta(gsheet = "TASK", wsheet = "Accepted", credentials_path
 
         credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
         gc = gspread.authorize(credentials)
-        spreadsheet = gc.open("TASK")
+        spreadsheet = gc.open(gsheet)
         worksheet_list = spreadsheet.worksheets()
-        Accepted = spreadsheet.worksheet("Accepted").get_all_records()
+        Accepted = spreadsheet.worksheet(wsheet).get_all_records()
         adf = pd.DataFrame(Accepted)
         adf = adf.astype("str")
 

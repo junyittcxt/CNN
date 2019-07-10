@@ -35,14 +35,13 @@ def timer(func):
     return inner
 
 @timer
-def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, db = None, collection_name = "FirstDL", price_db = "Production", price_coll = "prices"):
-    if db is None:
-        db = get_portfolio_db()
+def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, output_db = "MLProduction", output_collection_name = "FirstDL", price_db = "Production", price_coll = "prices"):
+    db = get_portfolio_db(output_db)
     signal = get_signal_mongo(query_date, PATH_DICT, key, price_db, price_coll)
     signal["code"] = strategy_meta["Code"]
     signal["key"] = key
     signal["write_time"] = datetime.datetime.now() #.strftime('%Y-%m-%d %H:%M:%S')
-    db[collection_name].insert(signal)
+    db[output_collection_name].insert(signal)
            
         
 def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_coll = "prices"):
