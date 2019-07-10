@@ -5,12 +5,25 @@ import joblib
 import datetime
 import numpy as np
 import pandas as pd
+import keras
+import tensorflow as tf
 from dateutil import parser
 from cnn_method import clean_data_x
 from keras.preprocessing.sequence import TimeseriesGenerator
 from query_api import get_path_dict, gen_connection, load_item_by_key, query_mysql
 from mongo_functions import get_portfolio_db
 
+
+class MongoLog():
+    def __init__(self, db_name = "MLLog"):
+        # create a log file
+        self.db = get_portfolio_db(portfolio_dbname=db_name)
+        
+    def log(self, idd, msg, other = "", coll = "log"):
+        msg_dict = dict(idd = idd, Date = datetime.datetime.now(), message = msg, other = other)
+        self.db[coll].insert_one(msg_dict)
+        
+        
 def timer(func):
     def inner(*args,**kwargs):
         t0 = time.time()
@@ -28,17 +41,30 @@ def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, db = None, col
     signal = get_signal_mongo(query_date, PATH_DICT, key, price_db, price_coll)
     signal["code"] = strategy_meta["Code"]
     signal["key"] = key
-    signal["write_time"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    signal["write_time"] = datetime.datetime.now() #.strftime('%Y-%m-%d %H:%M:%S')
     db[collection_name].insert(signal)
            
         
 def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_coll = "prices"):
+    
+    
     try:
+        os.environ["TF_MIN_GPU_MULTIPROCESSOR_COUNT"] = "4"
+        os.environ["CUDA_VISIBLE_DEVICES"]="0"
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        session = tf.Session(config=config)
+
+        mlog = MongoLog()
+        
         output = None
         
         # Load scaler, PARAMS, model
         scaler, DATA_PARAMS, MODEL_PARAMS, model = load_item_by_key(PATH_DICT, key, exclude_model = True)
-        print("Loaded: scaler, DATA_PARAMS, MODEL_PARAMS, model.")
+        training_code = MODEL_PARAMS["training_number"][0:4]
+        idd = dict(code = training_code, key = key)
+        mlog.log(idd = idd, msg = "Loaded: scaler, DATA_PARAMS, MODEL_PARAMS, model.")
+#         print("Loaded: scaler, DATA_PARAMS, MODEL_PARAMS, model.")
 
         # Initialize parameters
         raw_data_file = DATA_PARAMS["raw_data_file"]
@@ -49,20 +75,23 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
         try:
             CLEAN_METHOD_X = DATA_PARAMS["CLEAN_METHOD_X"]
         except:
-            print("CLEAN_METHOD_X default to breakout_only_x")
+            mlog.log(idd = idd, msg = "CLEAN_METHOD_X default to breakout_only_x")
+#             print("CLEAN_METHOD_X default to breakout_only_x")
             CLEAN_METHOD_X = "breakout_only_x"
 
         # Load accepted index
         accepted_index_file = "{t}_{target}.pkl".format(t = timeframe, target = TARGET_TO_PREDICT)
         accepted_index = joblib.load(os.path.join("MINUTE_INDEX", accepted_index_file))
-        print("Loaded: MINUTE_INDEX for {}".format(TARGET_TO_PREDICT))
+        mlog.log(idd = idd, msg = "Loaded: MINUTE_INDEX for {}".format(TARGET_TO_PREDICT))
+#         print("Loaded: MINUTE_INDEX for {}".format(TARGET_TO_PREDICT))
         
         # Get and Clean Data
         # Prices from MongoDB
-        diff_seconds = max((BREAKOUT_WINDOW+SEQ_LEN)*5*timeframe*60, int(4*24*60*60))
+        diff_seconds = max((BREAKOUT_WINDOW+SEQ_LEN)*10*timeframe*60, int(4*24*60*60))
         d2 = query_date
         d1 = d2 - datetime.timedelta(days = 0, seconds = diff_seconds)
-        print("Using Mongo: ", d1, d2)
+        mlog.log(idd = idd, msg = "Using Mongo: {} - {}".format(d1,d2))
+#         print("Using Mongo: {} - {}".format(d1,d2))
             
         prod_db = get_portfolio_db(price_db)
         coll = prod_db[price_coll]
@@ -73,8 +102,12 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
         price_df = price_df.reset_index()
         price_df = price_df.rename(columns={"time": "Date"})
         price_df = price_df.set_index("Date")
-        print(price_df.head(10))
+        
+        if not price_df.index.is_monotonic_increasing:
+            price_df = price_df.sort_index(ascending=True)
+            
         price_df = price_df.resample("{}min".format(timeframe), how = "last",label='right', closed = "right")
+        
             
         ##FILTER COLUMNS
         data_columns_file = "MIN_{t}_COLUMNS.pkl".format(t = timeframe)
@@ -96,7 +129,8 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
         target_col= "target"
         x_columns = [j for j in df.columns if j != target_col]
         df.loc[:,x_columns] = scaler.transform(df[x_columns])
-        print("Scaling: Done!")
+        mlog.log(idd = idd, msg = "Scaling: Done!")
+#         print("Scaling: Done!")
 
 
         #TimeSeriesGenerator
@@ -107,17 +141,21 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
                                length=SEQ_LEN, sampling_rate=1,
                                batch_size=128,
                                shuffle=False)
-        print("TimeseriesGenerator: Done!")
+        mlog.log(idd = idd, msg = "TimeseriesGenerator: Done!")
+#         print("TimeseriesGenerator: Done!")
 
         #Prediction
         while True:
             try:
                 scaler, DATA_PARAMS, MODEL_PARAMS, model = load_item_by_key(PATH_DICT, key, exclude_model = False)
-                print("Model Loaded!")
+                mlog.log(idd = idd, msg = "Model Loaded!")
+#                 print("Model Loaded!")
                 y_pred = model.predict_generator(data_gen)
-                print("Predict: Done!")
+                mlog.log(idd = idd, msg = "Predict: Done!")
+#                 print("Predict: Done!")
             except Exception as err:
-                print("MODEL ERROR HERE: ", err)
+                mlog.log(idd = idd, msg = "MODEL ERROR HERE: {}".format(err))
+#                 print("MODEL ERROR HERE: {}".format(err))
                 continue
             break
 
@@ -130,20 +168,24 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
         
         
         prediction_dict = create_prediction_dict(output, query_date, timeframe)
-        print(key, prediction_dict)
+        mlog.log(idd = idd, msg = key, other = prediction_dict)
+#         print(key, prediction_dict)
         return prediction_dict
     
     except Exception as err_all:
-        print("Error at get_signal: ", err_all)
+        mlog.log(idd = idd, msg = "Error at get_signal: {}".format(err_all))
+#         print("Error at get_signal: {}".format(err_all))
         return None
     
 
 def create_prediction_dict(output, query_date, timeframe):
     prediction_dict = dict()
-    prediction_dict["last_date"] = output[0].strftime('%Y-%m-%d %H:%M:%S')
-    prediction_dict["query_date"] = query_date.strftime('%Y-%m-%d %H:%M:%S')
+    prediction_dict["last_date"] = output[0] #.strftime('%Y-%m-%d %H:%M:%S')
+    prediction_dict["query_date"] = query_date #.strftime('%Y-%m-%d %H:%M:%S')
     prediction_dict["y"] = float(output[1])
     prediction_dict["status_code"] = int(output[2])
     prediction_dict["status"] = output[3]
     prediction_dict["timeframe"] = timeframe
+#     prediction_dict["last_date"]  = datetime.strptime(prediction_dict["last_date"], '%b %d %Y %I:%M%p')
+    
     return prediction_dict
