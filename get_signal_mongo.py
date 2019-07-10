@@ -45,15 +45,13 @@ def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, output_db = "M
            
         
 def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_coll = "prices"):
-    
-    
     try:
         os.environ["TF_MIN_GPU_MULTIPROCESSOR_COUNT"] = "4"
         os.environ["CUDA_VISIBLE_DEVICES"]="0"
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         session = tf.Session(config=config)
-
+        
         mlog = MongoLog()
         
         output = None
@@ -77,6 +75,10 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
             mlog.log(idd = idd, msg = "CLEAN_METHOD_X default to breakout_only_x")
 #             print("CLEAN_METHOD_X default to breakout_only_x")
             CLEAN_METHOD_X = "breakout_only_x"
+        
+        # Correct the query_date
+        corrected_minute = query_date.minute - query_date.minute % timeframe
+        query_date = datetime.datetime(query_date.year, query_date.month, query_date.day, query_date.hour, corrected_minute)
 
         # Load accepted index
         accepted_index_file = "{t}_{target}.pkl".format(t = timeframe, target = TARGET_TO_PREDICT)
@@ -106,7 +108,6 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
             price_df = price_df.sort_index(ascending=True)
             
         price_df = price_df.resample("{}min".format(timeframe), how = "last",label='right', closed = "right")
-        
             
         ##FILTER COLUMNS
         data_columns_file = "MIN_{t}_COLUMNS.pkl".format(t = timeframe)
