@@ -3,7 +3,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 
-def get_all_strategy_meta(credentials_path = None):
+def get_all_strategy_meta(gsheet = "TASK", wsheet = "Accepted", credentials_path = None):
     if credentials_path is None:
         credentials_path = '/media/workstation/Storage/GoogleProject/DeepLearningAlphaC.txt'
         
