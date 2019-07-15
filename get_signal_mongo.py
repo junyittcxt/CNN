@@ -13,6 +13,7 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 from query_api import get_path_dict, gen_connection, load_item_by_key, query_mysql
 from mongo_functions import get_portfolio_db
 
+from mongo_datetime import dtnow, dt, get_collection
 
 class MongoLog():
     def __init__(self, db_name = "MLLog"):
@@ -20,7 +21,7 @@ class MongoLog():
         self.db = get_portfolio_db(portfolio_dbname=db_name)
         
     def log(self, idd, msg, other = "", coll = "log"):
-        msg_dict = dict(idd = idd, Date = datetime.datetime.now(), message = msg, other = other)
+        msg_dict = dict(idd = idd, Date = dtnow(), message = msg, other = other)
         self.db[coll].insert_one(msg_dict)
         
         
@@ -40,7 +41,7 @@ def write_signal_mongo(query_date, PATH_DICT, key, strategy_meta, output_db = "M
     signal = get_signal_mongo(query_date, PATH_DICT, key, price_db, price_coll)
     signal["code"] = strategy_meta["Code"]
     signal["key"] = key
-    signal["write_time"] = datetime.datetime.now() #.strftime('%Y-%m-%d %H:%M:%S')
+    signal["write_time"] = dtnow() #.strftime('%Y-%m-%d %H:%M:%S')
     db[output_collection_name].insert(signal)
            
         
@@ -78,7 +79,7 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
         
         # Correct the query_date
         corrected_minute = query_date.minute - query_date.minute % timeframe
-        query_date = datetime.datetime(query_date.year, query_date.month, query_date.day, query_date.hour, corrected_minute)
+        query_date = dt(query_date.year, query_date.month, query_date.day, query_date.hour, corrected_minute)
 
         # Load accepted index
         accepted_index_file = "{t}_{target}.pkl".format(t = timeframe, target = TARGET_TO_PREDICT)
@@ -95,7 +96,8 @@ def get_signal_mongo(query_date, PATH_DICT, key, price_db = "Production", price_
 #         print("Using Mongo: {} - {}".format(d1,d2))
             
         prod_db = get_portfolio_db(price_db)
-        coll = prod_db[price_coll]
+#         coll = prod_db[price_coll]
+        coll = get_collection(prod_db, price_coll)
         result = coll.find({"time": {"$gte": d1, "$lte": d2}})
         price_df = pd.DataFrame([j for j in result])
         price_df["name"] = price_df["name"].str.replace('@', '')
